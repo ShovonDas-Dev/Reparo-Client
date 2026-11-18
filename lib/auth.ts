@@ -15,8 +15,7 @@ if (process.env.NODE_ENV !== "production") globalForMongo._mongoClient = client;
 
 const db = client.db("Reparo");
 
-// Roles a visitor may pick on the public sign-up form.
-// Admin is NOT in this list — see the hook below.
+
 const PUBLIC_ROLES = ["customer", "technician"];
 
 export const auth = betterAuth({
@@ -29,15 +28,12 @@ export const auth = betterAuth({
       role: {
         type: "string",
         defaultValue: "customer",
-        // allows the field to be sent during sign-up, but ONLY after the
-        // server-side check in the hook below has cleaned it up
         input: true,
       },
     },
   },
   hooks: {
-    // runs on the server before every auth request is processed.
-    // we never trust the role value coming from the browser.
+
     before: createAuthMiddleware(async (ctx) => {
       if (ctx.path !== "/sign-up/email") return;
 
