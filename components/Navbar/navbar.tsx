@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils"
 import { buttonVariants } from "@/components/Navbar/button"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { useSession } from "@/lib/auth-client"
+import { UserMenu } from "./user-menu"
 
 const NAV_LINKS = [
   { href: "/", label: "Home" },
@@ -93,7 +94,7 @@ export function Navbar() {
           </Link>
           </>
           : 
-            <p>{user.name}</p>
+            <UserMenu/>
 
           } 
           
