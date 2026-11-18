@@ -7,6 +7,20 @@ const nextConfig: NextConfig = {
   },
   cacheComponents: true,
   partialPrefetching: true,
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+        pathname: "/**",
+      },
+      {
+        protocol:"https",
+        hostname:"loremflickr.com",
+        pathname:"/**"
+      },
+    ],
+  },
   turbopack: {
     rules: {
       "*.css": {

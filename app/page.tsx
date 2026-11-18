@@ -1,11 +1,23 @@
+import CtaSection from "@/components/Home/cta-section";
+import Footer from "@/components/Footer/footer";
 import HeroSection from "@/components/Home/Hero-Section/page";
+import HowItWorks from "@/components/Home/HowItWorks";
+import PromiseSection from "@/components/Home/promise-section";
 import ServiceCaregorise from "@/components/Home/ServiceCategories/ServiceCaregorise";
+import TestimonialsSection from "@/components/Home/testimonials-section";
 
 export default function Home() {
   return (
-    <main>
-      <HeroSection/>
-      <ServiceCaregorise/>
-    </main>
+    <>
+      <main>
+        <HeroSection/>
+        <ServiceCaregorise/>
+        <HowItWorks/>
+        <PromiseSection/>
+        <TestimonialsSection/>
+        <CtaSection/>
+      </main>
+      {/* <Footer/> */}
+    </>
   );
 }

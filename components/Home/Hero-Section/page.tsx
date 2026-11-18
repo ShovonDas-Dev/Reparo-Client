@@ -40,7 +40,7 @@ export default function HeroSection() {
   const handleSearch = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     const term = query.trim()
-    router.push(term ? `/services?q=${encodeURIComponent(term)}` : "/services")
+    router.push(term ? `/services?search=${encodeURIComponent(term)}` : "/services")
   }
 
   return (
@@ -87,13 +87,13 @@ export default function HeroSection() {
               <span className="block">deserve better.</span>
               <span className="block">
                 <span className="relative inline-block whitespace-nowrap">
-                  <span className="relative z-10">Get them fixed.</span>
+                  <span className="relative z-10 italic">Get them fixed.</span>
                   <motion.span
                     aria-hidden
                     initial={{ scaleX: 0 }}
                     animate={{ scaleX: 1 }}
                     transition={{ delay: 0.85, duration: 0.5, ease: "easeOut" }}
-                    className="absolute inset-x-0 bottom-1.5 z-0 h-[0.3em] origin-left rounded-full bg-accent/70"
+                    className="absolute inset-x-0 bottom-1.5 z-0 h-[0.2em] origin-left rounded-full bg-accent/70"
                   />
                 </span>
               </span>

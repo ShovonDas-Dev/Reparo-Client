@@ -29,6 +29,6 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "**/*.mts"
-  ],
+, "lib/API/imagebb.js", "components/Technician/ServiceForm.tsx", "app/dashboard/technician/add-service/page.tsx"  ],
   "exclude": ["node_modules"]
 }

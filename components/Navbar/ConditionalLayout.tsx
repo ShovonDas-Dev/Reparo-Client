@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { Navbar } from "./navbar";
+import Footer from "../Footer/footer";
 
 export default function ConditionalLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
@@ -22,6 +23,7 @@ export default function ConditionalLayout({ children }: { children: ReactNode })
     <>
       {!hideNavbar && <Navbar />}
       {children}
+      {<Footer/>}
     </>
   );
 }
