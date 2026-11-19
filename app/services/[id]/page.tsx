@@ -18,6 +18,7 @@ import { ServiceDetails } from "@/lib/API/service";
 import type { IService } from "@/lib/type";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import RepairReqBtn from "@/components/services/DetailsPage/RepairReqBtn";
 
 const ServiceDetailsPage = () => {
   const params = useParams();
@@ -222,13 +223,8 @@ const ServiceDetailsPage = () => {
             </div>
 
             {/* CTA */}
-            <Button
-              render={<Link href="/sign-in" />}
-              className="mt-5 h-10 w-full gap-2"
-            >
-              Request this repair
-              <ArrowRight aria-hidden className="size-4" />
-            </Button>
+            
+            <RepairReqBtn/>
 
             {/* Pay note */}
             <p className="mt-4 flex items-start gap-2 text-xs text-muted-foreground">
