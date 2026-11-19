@@ -14,6 +14,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { AddBookingData } from "@/lib/API/service";
 
 // All the data we collect in the form.
 type RepairRequestForm = {
@@ -39,12 +40,14 @@ const inputClass =
   "h-10 w-full min-w-0 rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground transition-colors outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
 
 // Button that opens a dialog with the repair request form.
-export default function RepairReqBtn() {
+// serviceId is the current service's MongoDB _id, passed in by the details page.
+export default function RepairReqBtn({ serviceId }: { serviceId: string }) {
   const { data: session } = useSession();
 
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState("");
   const [form, setForm] = useState<RepairRequestForm>(EMPTY_FORM);
 
   // Generic change handler: updates whichever field the user typed in.
@@ -58,28 +61,41 @@ export default function RepairReqBtn() {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    // Everything the form collected, in one object.
-    const requestData = {
-      ...form,
-      submittedAt: new Date().toISOString(),
+    // Ignore extra clicks while a request is already on its way.
+    if (submitting) return;
+
+    const customerId = session?.user?.id;
+
+    if (!customerId) {
+      setError("Please sign in before sending a repair request.");
+      return;
+    }
+
+    // The payload the backend expects — note `problem` is sent as
+    // `issueDescription`, and there is no `submittedAt`.
+    const bookingData = {
+      serviceId,
+      customerId,
+      name: form.name,
+      email: form.email,
+      phone: form.phone,
+      preferredDate: form.preferredDate,
+      address: form.address,
+      issueDescription: form.problem,
     };
-    console.log(requestData)
 
     setSubmitting(true);
+    setError("");
 
     try {
-      // Replace this with your real API call when the endpoint is ready, e.g.:
-      // await fetch("/api/repair-requests", {
-      //   method: "POST",
-      //   headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify(requestData),
-      // });
-      console.log("Repair request data:", requestData);
-
-      // Simulate a short network delay so the button state is visible.
-      await new Promise((resolve) => setTimeout(resolve, 600));
-
+      await AddBookingData(bookingData);
       setSubmitted(true);
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Something went wrong while sending your request. Please try again."
+      );
     } finally {
       setSubmitting(false);
     }
@@ -91,6 +107,7 @@ export default function RepairReqBtn() {
     setOpen(nextOpen);
     if (nextOpen) {
       setSubmitted(false);
+      setError("");
       setForm({
         ...EMPTY_FORM,
         name: session?.user?.name || "",
@@ -233,6 +250,13 @@ export default function RepairReqBtn() {
                 className={`${inputClass} h-auto resize-none py-2`}
               />
             </div>
+
+            {/* Error message, shown when the request fails */}
+            {error && (
+              <p role="alert" className="text-sm text-destructive">
+                {error}
+              </p>
+            )}
 
             <DialogFooter>
               <Button

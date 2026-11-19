@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
 import { ThemeProvider } from "@/components/ui/theme-provider";
-import ConditionalLayout from "@/components/Navbar/ConditionalLayout";
+import { Navbar } from "@/components/Navbar/navbar";
 import "./globals.css";
-import { Toaster } from "sonner";
+import ConditionalLayout from "@/components/Navbar/ConditionalLayout";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -42,8 +42,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           enableSystem
           disableTransitionOnChange
         >
-          <ConditionalLayout>{children}
-            <Toaster />
+          <ConditionalLayout>
+            {children}
           </ConditionalLayout>
         </ThemeProvider>
       </body>

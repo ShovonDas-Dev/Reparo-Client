@@ -81,3 +81,35 @@ export const ServiceDetails = async (id: string) => {
 
   return response.json();
 };
+
+// The exact data the backend needs to create a booking.
+export type BookingPayload = {
+  serviceId: string;
+  customerId: string;
+  name: string;
+  email: string;
+  phone: string;
+  preferredDate: string;
+  address: string;
+  issueDescription: string;
+};
+
+// POST /bookings — creates a new booking on the Express backend.
+export const AddBookingData = async (bookingData: BookingPayload) => {
+  const res = await fetch("http://localhost:5000/bookings", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(bookingData),
+  });
+
+  // Tell the caller when the request failed (bad request, server error, ...).
+  if (!res.ok) {
+    throw new Error("Failed to create booking. Please try again.");
+  }
+
+  // Some backends answer with an empty body, so don't crash on that.
+  return res.json().catch(() => ({}));
+};
+

@@ -224,7 +224,7 @@ const ServiceDetailsPage = () => {
 
             {/* CTA */}
             
-            <RepairReqBtn/>
+            <RepairReqBtn serviceId={service._id ?? id} />
 
             {/* Pay note */}
             <p className="mt-4 flex items-start gap-2 text-xs text-muted-foreground">
