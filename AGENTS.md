@@ -45,3 +45,18 @@ Next.js 16.4.6 (App Router) + React 19 + TypeScript app ("Reparo", a repair-serv
 
 - Static assets live in `Public/` (capital P). Next serves from `public/`; it works locally on case-insensitive Windows but will 404 on case-sensitive Linux deploys. Put new assets in lowercase `public/` and/or rename the folder.
 - `*.tsbuildinfo` is gitignored but still used for `tsc --noEmit` incremental state; a stale cache has hidden a real type error that `next build` caught. If the two disagree, delete `tsconfig.tsbuildinfo` and re-run.
+
+
+# Development Rules
+
+- Work directly in Build mode.
+- Inspect only relevant files.
+- Avoid unnecessary planning.
+- Do not repeatedly read the same files.
+- Make code changes as soon as requirements are clear.
+- Do not create unnecessary components or files.
+- Avoid unnecessary tool calls.
+- Never repeat a failed command without changing the approach.
+- Run only relevant checks after implementation.
+- If the task is clear, complete it without asking unnecessary questions.
+- Report completed work and any remaining issues briefly.
