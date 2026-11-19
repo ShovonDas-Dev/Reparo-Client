@@ -68,3 +68,16 @@ export const getService = async (
     categoryCounts: data.categoryCounts ?? {},
   };
 };
+
+
+export const ServiceDetails = async (id: string) => {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/services/${id}`
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch service details");
+  }
+
+  return response.json();
+};

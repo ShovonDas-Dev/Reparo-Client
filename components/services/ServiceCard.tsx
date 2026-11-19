@@ -15,6 +15,10 @@ import {
 import { cn } from "@/lib/utils";
 import type { IService } from "@/lib/type";
 
+import { useRouter } from "next/navigation";
+
+
+
 type ServiceCardProps = {
   service: IService;
   // Used only to stagger the entrance animation.
@@ -32,8 +36,14 @@ export function ServiceCard({ service, index }: ServiceCardProps) {
       <Store aria-hidden className="size-3.5" />
     );
 
+    const router = useRouter()
+    const handleDetails = ()=>{
+      router.push(`/services/${service._id}`)
+    }
+
   return (
     <motion.article
+      onClick={handleDetails}
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: Math.min(index, 6) * 0.06, ease: "easeOut" }}
