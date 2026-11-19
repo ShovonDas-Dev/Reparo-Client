@@ -104,8 +104,12 @@ export const AddBookingData = async (bookingData: BookingPayload) => {
     body: JSON.stringify(bookingData),
   });
 
+  console.log(res)
+
   // Tell the caller when the request failed (bad request, server error, ...).
   if (!res.ok) {
+    const text = await res.text();
+  console.log("Server said:", text);
     throw new Error("Failed to create booking. Please try again.");
   }
 

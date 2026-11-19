@@ -15,8 +15,8 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { AddBookingData } from "@/lib/API/service";
+import { toast } from "sonner";
 
-// All the data we collect in the form.
 type RepairRequestForm = {
   name: string;
   email: string;
@@ -36,11 +36,10 @@ const EMPTY_FORM: RepairRequestForm = {
 };
 
 const labelClass = "text-sm font-medium text-foreground";
+
 const inputClass =
   "h-10 w-full min-w-0 rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground transition-colors outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
 
-// Button that opens a dialog with the repair request form.
-// serviceId is the current service's MongoDB _id, passed in by the details page.
 export default function RepairReqBtn({ serviceId }: { serviceId: string }) {
   const { data: session } = useSession();
 
@@ -48,31 +47,41 @@ export default function RepairReqBtn({ serviceId }: { serviceId: string }) {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
+
   const [form, setForm] = useState<RepairRequestForm>(EMPTY_FORM);
 
-  // Generic change handler: updates whichever field the user typed in.
+  // Get user role
+  const userRole = session?.user?.role?.toLowerCase();
+
+  // Only customers can request a repair
+  const isCustomer = userRole === "customer";
+
+  // Handle input changes
   const handleChange = (
-    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = event.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+
+    setForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
+  // Handle form submission
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    // Ignore extra clicks while a request is already on its way.
-    if (submitting) return;
+    if (submitting || submitted) return;
 
     const customerId = session?.user?.id;
 
-    if (!customerId) {
-      setError("Please sign in before sending a repair request.");
+    // Check login and role
+    if (!customerId || !isCustomer) {
+      setError("Only customers can send repair requests.");
       return;
     }
 
-    // The payload the backend expects — note `problem` is sent as
-    // `issueDescription`, and there is no `submittedAt`.
     const bookingData = {
       serviceId,
       customerId,
@@ -89,25 +98,31 @@ export default function RepairReqBtn({ serviceId }: { serviceId: string }) {
 
     try {
       await AddBookingData(bookingData);
+
+      toast.success("Your repair request has been sent successfully!");
+
       setSubmitted(true);
+      setOpen(false);
     } catch (err) {
       setError(
         err instanceof Error
           ? err.message
-          : "Something went wrong while sending your request. Please try again."
+          : "Something went wrong. Please try again.",
       );
     } finally {
       setSubmitting(false);
     }
   };
 
-  // Reset the form each time the dialog opens, and pre-fill
-  // name + email from the logged-in user.
+  // Handle dialog open and close
   const handleOpenChange = (nextOpen: boolean) => {
+    if (nextOpen && (!isCustomer || submitted)) return;
+
     setOpen(nextOpen);
+
     if (nextOpen) {
-      setSubmitted(false);
       setError("");
+
       setForm({
         ...EMPTY_FORM,
         name: session?.user?.name || "",
@@ -118,164 +133,179 @@ export default function RepairReqBtn({ serviceId }: { serviceId: string }) {
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger
-        render={
-          <Button className="mt-5 h-10 w-full gap-2">
-            Request this repair
-            <ArrowRight aria-hidden className="size-4" />
-          </Button>
-        }
-      />
+      {/* Request Button */}
+
+      {!session?.user ? (
+        <Button className="mt-5 h-10 w-full" disabled>
+          Please login to request a repair
+        </Button>
+      ) : !isCustomer ? (
+        <Button className="mt-5 h-10 w-full" disabled>
+          Not available for your role
+        </Button>
+      ) : (
+        <DialogTrigger
+          render={
+            <Button className="mt-5 h-10 w-full gap-2" disabled={submitted}>
+              {submitted ? "Request Sent" : "Request this repair"}
+
+              {!submitted && <ArrowRight aria-hidden className="size-4" />}
+            </Button>
+          }
+        />
+      )}
+
+      {/* Request Form Dialog */}
 
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>
-            {submitted ? "Request sent!" : "Request this repair"}
-          </DialogTitle>
+          <DialogTitle>Request this repair</DialogTitle>
+
           <DialogDescription>
-            {submitted
-              ? "A FixMate professional will contact you soon."
-              : "Fill in your details and we will get back to you."}
+            Fill in your details and we will get back to you.
           </DialogDescription>
         </DialogHeader>
 
-        {submitted ? (
-          // Success state — no form, just a close button.
-          <div className="py-6 text-center">
-            <p className="text-sm text-muted-foreground">
-              Your request has been received. Keep an eye on your email for an
-              update.
-            </p>
-            <Button
-              variant="outline"
-              className="mt-6"
-              onClick={() => setOpen(false)}
-            >
-              Close
-            </Button>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Name */}
+
+          <div className="space-y-1.5">
+            <label htmlFor="repair-name" className={labelClass}>
+              Name
+            </label>
+
+            <Input
+              id="repair-name"
+              name="name"
+              value={form.name}
+              onChange={handleChange}
+              placeholder="Your full name"
+              required
+            />
           </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Name */}
+
+          {/* Email */}
+
+          <div className="space-y-1.5">
+            <label htmlFor="repair-email" className={labelClass}>
+              Email
+            </label>
+
+            <Input
+              id="repair-email"
+              name="email"
+              type="email"
+              value={form.email}
+              onChange={handleChange}
+              placeholder="you@example.com"
+              required
+            />
+          </div>
+
+          {/* Phone and Preferred Date */}
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
-              <label htmlFor="repair-name" className={labelClass}>
-                Name
+              <label htmlFor="repair-phone" className={labelClass}>
+                Phone
               </label>
+
               <Input
-                id="repair-name"
-                name="name"
-                value={form.name}
+                id="repair-phone"
+                name="phone"
+                type="tel"
+                value={form.phone}
                 onChange={handleChange}
-                placeholder="Your full name"
+                placeholder="01XXXXXXXXX"
                 required
               />
             </div>
 
-            {/* Email */}
             <div className="space-y-1.5">
-              <label htmlFor="repair-email" className={labelClass}>
-                Email
+              <label htmlFor="repair-date" className={labelClass}>
+                Preferred date
               </label>
+
               <Input
-                id="repair-email"
-                name="email"
-                type="email"
-                value={form.email}
+                id="repair-date"
+                name="preferredDate"
+                type="date"
+                value={form.preferredDate}
                 onChange={handleChange}
-                placeholder="you@example.com"
                 required
               />
             </div>
+          </div>
 
-            {/* Phone + preferred date */}
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="space-y-1.5">
-                <label htmlFor="repair-phone" className={labelClass}>
-                  Phone
-                </label>
-                <Input
-                  id="repair-phone"
-                  name="phone"
-                  type="tel"
-                  value={form.phone}
-                  onChange={handleChange}
-                  placeholder="01XXXXXXXXX"
-                  required
-                />
-              </div>
+          {/* Address */}
 
-              <div className="space-y-1.5">
-                <label htmlFor="repair-date" className={labelClass}>
-                  Preferred date
-                </label>
-                <Input
-                  id="repair-date"
-                  name="preferredDate"
-                  type="date"
-                  value={form.preferredDate}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-            </div>
+          <div className="space-y-1.5">
+            <label htmlFor="repair-address" className={labelClass}>
+              Address
+            </label>
 
-            {/* Address */}
-            <div className="space-y-1.5">
-              <label htmlFor="repair-address" className={labelClass}>
-                Address
-              </label>
-              <Input
-                id="repair-address"
-                name="address"
-                value={form.address}
-                onChange={handleChange}
-                placeholder="Street, area, city"
-                required
-              />
-            </div>
+            <Input
+              id="repair-address"
+              name="address"
+              value={form.address}
+              onChange={handleChange}
+              placeholder="Street, area, city"
+              required
+            />
+          </div>
 
-            {/* What is wrong */}
-            <div className="space-y-1.5">
-              <label htmlFor="repair-problem" className={labelClass}>
-                What is wrong?
-              </label>
-              <textarea
-                id="repair-problem"
-                name="problem"
-                value={form.problem}
-                onChange={handleChange}
-                placeholder="Describe the issue..."
-                rows={3}
-                required
-                className={`${inputClass} h-auto resize-none py-2`}
-              />
-            </div>
+          {/* Problem Description */}
 
-            {/* Error message, shown when the request fails */}
-            {error && (
-              <p role="alert" className="text-sm text-destructive">
-                {error}
-              </p>
-            )}
+          <div className="space-y-1.5">
+            <label htmlFor="repair-problem" className={labelClass}>
+              What is wrong?
+            </label>
 
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setOpen(false)}
-                disabled={submitting}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" disabled={submitting} className="gap-2">
-                {submitting && (
-                  <Loader2 aria-hidden className="size-4 animate-spin" />
-                )}
-                {submitting ? "Sending..." : "Send request"}
-              </Button>
-            </DialogFooter>
-          </form>
-        )}
+            <textarea
+              id="repair-problem"
+              name="problem"
+              value={form.problem}
+              onChange={handleChange}
+              placeholder="Describe the issue..."
+              rows={3}
+              required
+              className={`${inputClass} h-auto resize-none py-2`}
+            />
+          </div>
+
+          {/* Error Message */}
+
+          {error && (
+            <p role="alert" className="text-sm text-destructive">
+              {error}
+            </p>
+          )}
+
+          {/* Dialog Footer */}
+
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setOpen(false)}
+              disabled={submitting}
+            >
+              Cancel
+            </Button>
+
+            <Button
+              type="submit"
+              disabled={submitting || submitted}
+              className="gap-2"
+            >
+              {submitting && (
+                <Loader2 aria-hidden className="size-4 animate-spin" />
+              )}
+
+              {submitting ? "Sending..." : "Send request"}
+            </Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );

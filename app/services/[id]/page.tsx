@@ -19,10 +19,13 @@ import type { IService } from "@/lib/type";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import RepairReqBtn from "@/components/services/DetailsPage/RepairReqBtn";
+import { useSession } from "@/lib/auth-client";
 
 const ServiceDetailsPage = () => {
   const params = useParams();
   const id = params.id as string;
+
+  
 
   const [service, setService] = useState<IService | null>(null);
   const [loading, setLoading] = useState(true);
@@ -223,6 +226,8 @@ const ServiceDetailsPage = () => {
             </div>
 
             {/* CTA */}
+
+           
             
             <RepairReqBtn serviceId={service._id ?? id} />
 
