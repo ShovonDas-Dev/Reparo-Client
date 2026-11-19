@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
 import { ThemeProvider } from "@/components/ui/theme-provider";
+import { Toaster } from "@/components/ui/sonner";
 import { Navbar } from "@/components/Navbar/navbar";
 import "./globals.css";
 import ConditionalLayout from "@/components/Navbar/ConditionalLayout";
@@ -45,6 +46,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <ConditionalLayout>
             {children}
           </ConditionalLayout>
+
+          {/* Shows the small success / error messages (sonner). */}
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>

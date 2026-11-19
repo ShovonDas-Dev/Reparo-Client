@@ -94,9 +94,41 @@ export type BookingPayload = {
   issueDescription: string;
 };
 
+// One booking that a customer made for a service.
+export type Booking = {
+  _id: string;
+  serviceName: string;
+  category: string;
+  image: string;
+  technicianName: string;
+  customerName: string;
+  preferredDate: string;
+  address: string;
+  phone: string;
+  issueDescription: string;
+  amount: number;
+  status: "pending" | "confirmed" | "in_progress" | "completed" | "cancelled";
+  paymentStatus: "unpaid" | "paid";
+  createdAt: string;
+};
+
+// The answer shape of the endpoints that send a list of bookings.
+type BookingsResponse = {
+  success: boolean;
+  message?: string;
+  data?: Booking[];
+};
+
+// The answer shape of the endpoints that change or create one booking.
+type BookingActionResponse = {
+  success: boolean;
+  message?: string;
+  data?: Booking;
+};
+
 // POST /bookings — creates a new booking on the Express backend.
 export const AddBookingData = async (bookingData: BookingPayload) => {
-  const res = await fetch("http://localhost:5000/bookings", {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/bookings`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -104,16 +136,209 @@ export const AddBookingData = async (bookingData: BookingPayload) => {
     body: JSON.stringify(bookingData),
   });
 
-  console.log(res)
+  // Read the JSON body first.
+  const data: BookingActionResponse = await res
+    .json()
+    .catch(() => ({ success: false }));
 
   // Tell the caller when the request failed (bad request, server error, ...).
   if (!res.ok) {
-    const text = await res.text();
-  console.log("Server said:", text);
-    throw new Error("Failed to create booking. Please try again.");
+    throw new Error(data.message || "Failed to create booking. Please try again.");
   }
 
-  // Some backends answer with an empty body, so don't crash on that.
-  return res.json().catch(() => ({}));
+  return data;
 };
 
+// GET /bookings/customer/:customerId — all bookings of one customer.
+export const getCustomerBookings = async (
+  customerId: string
+): Promise<Booking[]> => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/bookings/customer/${encodeURIComponent(customerId)}`
+  );
+
+  // Read the JSON body first.
+  const data: BookingsResponse = await res
+    .json()
+    .catch(() => ({ success: false }));
+
+  // Tell the caller when the request failed.
+  if (!res.ok) {
+    throw new Error(data.message || "Failed to load your bookings.");
+  }
+
+  return data.data ?? [];
+};
+
+// PATCH /bookings/:id/cancel — cancels one booking.
+export const cancelBooking = async (bookingId: string) => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/bookings/${encodeURIComponent(bookingId)}/cancel`,
+    { method: "PATCH" }
+  );
+
+  // Read the JSON body first.
+  const data: BookingActionResponse = await res
+    .json()
+    .catch(() => ({ success: false }));
+
+  // Tell the caller when the request failed.
+  if (!res.ok) {
+    throw new Error(data.message || "Failed to cancel the booking.");
+  }
+
+  return data;
+};
+
+// PATCH /bookings/:id/pay — marks one booking as paid.
+export const payBooking = async (bookingId: string) => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/bookings/${encodeURIComponent(bookingId)}/pay`,
+    { method: "PATCH" }
+  );
+
+  // Read the JSON body first.
+  const data: BookingActionResponse = await res
+    .json()
+    .catch(() => ({ success: false }));
+
+  // Tell the caller when the request failed.
+  if (!res.ok) {
+    throw new Error(data.message || "Failed to pay for the booking.");
+  }
+
+  return data;
+};
+
+// GET /bookings/technician/:email — all bookings of one technician.
+export const getTechnicianBookings = async (
+  email: string
+): Promise<Booking[]> => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/bookings/technician/${encodeURIComponent(email)}`
+  );
+
+  // Read the JSON body first.
+  const data: BookingsResponse = await res
+    .json()
+    .catch(() => ({ success: false }));
+
+  // Tell the caller when the request failed.
+  if (!res.ok) {
+    throw new Error(data.message || "Failed to load your bookings.");
+  }
+
+  return data.data ?? [];
+};
+
+// PATCH /bookings/:id/status — moves one booking to a new status.
+export const updateBookingStatus = async (
+  bookingId: string,
+  status: Booking["status"]
+) => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/bookings/${encodeURIComponent(bookingId)}/status`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ status }),
+    }
+  );
+
+  // Read the JSON body first.
+  const data: BookingActionResponse = await res
+    .json()
+    .catch(() => ({ success: false }));
+
+  // Tell the caller when the request failed.
+  if (!res.ok) {
+    throw new Error(data.message || "Failed to update the booking.");
+  }
+
+  return data;
+};
+
+
+
+
+export const deleteTechnicianService = async (
+  id: string,
+  email: string,
+) => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/services/technician/${id}/${encodeURIComponent(email)}`,
+    {
+      method: "DELETE",
+    },
+  );
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(data.message || "Failed to delete service");
+  }
+
+  return data;
+};
+
+// One service that a technician added.
+export type Service = {
+  _id: string;
+  title: string;
+  category: string;
+  description: string;
+  image: string;
+  basePrice: number;
+  estimatedDuration: string;
+  serviceMode: string;
+  serviceArea: string;
+  technicianEmail: string;
+  approvalStatus: "pending" | "approved" | "rejected";
+  isAvailable: boolean;
+  postedAt: string;
+};
+
+// GET /services/technician/:email — all services of one technician.
+export const getTechnicianServices = async (
+  email: string,
+): Promise<Service[]> => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/services/technician/${encodeURIComponent(email)}`,
+  );
+
+  // Read the JSON body first.
+  const data = await res.json().catch(() => ({}));
+
+  if (!res.ok) {
+    throw new Error(data.message || "Failed to fetch services");
+  }
+
+  return data.data ?? [];
+};
+
+// Turn a service on or off (true = available, false = not available)
+export const updateServiceAvailability = async (
+  serviceId: string,
+  isAvailable: boolean
+) => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/services/technician/${serviceId}/availability`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ isAvailable }),
+    }
+  );
+
+  const data = await res.json().catch(() => ({}));
+
+  if (!res.ok) {
+    throw new Error(data.message || "Failed to update service");
+  }
+
+  return data;
+};

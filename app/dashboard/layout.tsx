@@ -109,7 +109,10 @@ function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
-        <div className="flex items-center gap-2.5 px-2 py-1.5">
+       <Link 
+        href="/"
+       >
+         <div  className="flex items-center gap-2.5 px-2 py-1.5">
           <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-accent text-accent-foreground">
             <Wrench className="size-4" strokeWidth={2.4} />
           </span>
@@ -117,6 +120,7 @@ function AppSidebar() {
             Reparo<span className="text-[#8fb545]">.</span>
           </span>
         </div>
+       </Link>
       </SidebarHeader>
 
       <SidebarContent>
