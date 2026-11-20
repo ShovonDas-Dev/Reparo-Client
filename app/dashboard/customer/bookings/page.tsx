@@ -20,6 +20,7 @@ import {
 import { useSession } from "@/lib/auth-client";
 
 import AlartDeleteBtn from "./AlartDeleteBtn";
+import { useRouter } from "next/navigation";
 
 // Every status has a short label and a colour for the badge.
 const STATUS_MAP: Record<Booking["status"], { label: string; color: string }> =
@@ -106,8 +107,10 @@ export default function CustomerBookingsPage() {
   };
 
   // Pay for a finished booking and load the list again.
+  const route = useRouter()
   const handlePay = async (booking: Booking) => {
     try {
+      route.push("/payment")
       await payBooking(booking._id);
       toast.success("Payment done. Thank you!");
       await loadBookings();
