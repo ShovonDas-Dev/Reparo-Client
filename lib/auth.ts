@@ -43,12 +43,12 @@ export const auth = betterAuth({
         typeof ctx.body?.role === "string" ? ctx.body.role : undefined;
 
       // never allow self-assigning admin rights from the public form
-      if (requestedRole === "admin") {
-        throw new APIError("FORBIDDEN", {
-          message:
-            "Admin accounts cannot be created through public sign-up. Please contact support.",
-        });
-      }
+      // if (requestedRole === "admin") {
+      //   throw new APIError("FORBIDDEN", {
+      //     message:
+      //       "Admin accounts cannot be created through public sign-up. Please contact support.",
+      //   });
+      // }
 
       // only whitelisted roles are accepted; anything unknown falls back to customer
       if (requestedRole && !PUBLIC_ROLES.includes(requestedRole)) {

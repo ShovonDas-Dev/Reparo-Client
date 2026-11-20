@@ -11,8 +11,145 @@ export type ServiceQueryParams = {
   limit?: number;
 };
 
+export type BookingPayload = {
+  serviceId: string;
+  customerId: string;
+  name: string;
+  email: string;
+  phone: string;
+  preferredDate: string;
+  address: string;
+  issueDescription: string;
+};
+export type Booking = {
+  _id: string;
+  serviceName: string;
+  category: string;
+  image: string;
+  technicianName: string;
+  customerName: string;
+  preferredDate: string;
+  address: string;
+  phone: string;
+  issueDescription: string;
+  amount: number;
+  status: "pending" | "confirmed" | "in_progress" | "completed" | "cancelled";
+  paymentStatus: "unpaid" | "paid";
+  createdAt: string;
+};
+export type Payment = {
+  _id: string;
+  bookingId: string;
+  customerId: string;
+  technicianId?: string;
+  amount: number;
+  currency: string;
+  method: "card";
+  status: "paid";
+  transactionId: string;
+  paidAt: string;
+  createdAt: string;
+};
+// The answer shape of the endpoints that send a list of bookings.
+type BookingsResponse = {
+  success: boolean;
+  message?: string;
+  data?: Booking[];
+};
+
+// The answer shape of the endpoints that change or create one booking.
+type BookingActionResponse = {
+  success: boolean;
+  message?: string;
+  data?: Booking;
+};
+
+// The answer shape of the endpoints that send a list of payments.
+type PaymentsResponse = {
+  success: boolean;
+  message?: string;
+  data?: Payment[];
+};
+
+// One service that a technician added.
+export type Service = {
+  _id: string;
+  title: string;
+  category: string;
+  description: string;
+  image: string;
+  basePrice: number;
+  estimatedDuration: string;    
+  serviceMode: string;
+  serviceArea: string;
+  technicianEmail: string;
+  approvalStatus: "pending" | "approved" | "rejected";
+  isAvailable: boolean;
+  postedAt: string;
+};
+
+// The answer shape of PATCH /bookings/:id/pay.
+type PayBookingResponse = BookingActionResponse & {
+  payment?: Payment;
+};
+
+// all User api
+
+// One user account.
+export type User = {
+  _id: string;
+  name?: string;
+  email?: string;
+  role: "customer" | "technician" | "admin";
+  image?: string;
+  emailVerified?: boolean;
+  createdAt?: string;
+};
+
+// GET /users — all user accounts for the admin users page.
+export const getUsers = async (): Promise<User[]> => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/users`
+  );
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch users");
+  }
+
+  const data = await res.json();
+
+  // Make sure the server really sent a list before using it.
+  if (!Array.isArray(data)) {
+    throw new Error("Invalid response from the users API");
+  }
+
+  return data;
+};
+
+// Change the role of one user (customer, technician or admin)
+export const updateCustomerRole = async (userId: string, role: string) => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/user/${userId}/role`,
+    {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ role }),
+    },  
+  );
+
+  const data = await res.json();
+
+  // If the backend says no, show its message
+  if (!res.ok) {
+    throw new Error(data.message || "Could not change the role.");
+  }
+
+  return data;
+};
+
 // when tecnician added post then work this function
 // The technician form sends a ServicePayload (its serviceMode is a plain string).
+
 export const postService = async (serviceData: ServicePayload ) => {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/services`,
@@ -82,76 +219,6 @@ export const ServiceDetails = async (id: string) => {
   return response.json();
 };
 
-// The exact data the backend needs to create a booking.
-export type BookingPayload = {
-  serviceId: string;
-  customerId: string;
-  name: string;
-  email: string;
-  phone: string;
-  preferredDate: string;
-  address: string;
-  issueDescription: string;
-};
-
-// One booking that a customer made for a service.
-export type Booking = {
-  _id: string;
-  serviceName: string;
-  category: string;
-  image: string;
-  technicianName: string;
-  customerName: string;
-  preferredDate: string;
-  address: string;
-  phone: string;
-  issueDescription: string;
-  amount: number;
-  status: "pending" | "confirmed" | "in_progress" | "completed" | "cancelled";
-  paymentStatus: "unpaid" | "paid";
-  createdAt: string;
-};
-
-// The answer shape of the endpoints that send a list of bookings.
-type BookingsResponse = {
-  success: boolean;
-  message?: string;
-  data?: Booking[];
-};
-
-// The answer shape of the endpoints that change or create one booking.
-type BookingActionResponse = {
-  success: boolean;
-  message?: string;
-  data?: Booking;
-};
-
-// One saved payment for a completed booking.
-export type Payment = {
-  _id: string;
-  bookingId: string;
-  customerId: string;
-  technicianId?: string;
-  amount: number;
-  currency: string;
-  method: "card";
-  status: "paid";
-  transactionId: string;
-  paidAt: string;
-  createdAt: string;
-};
-
-// The answer shape of the endpoints that send a list of payments.
-type PaymentsResponse = {
-  success: boolean;
-  message?: string;
-  data?: Payment[];
-};
-
-// The answer shape of PATCH /bookings/:id/pay.
-type PayBookingResponse = BookingActionResponse & {
-  payment?: Payment;
-};
 
 // POST /bookings — creates a new booking on the Express backend.
 export const AddBookingData = async (bookingData: BookingPayload) => {
@@ -267,6 +334,28 @@ export const getCustomerPayments = async (
   return data.data ?? [];
 };
 
+// GET /payments/technician/:technicianId — all payments of one technician.
+export const getTechnicianPayments = async (
+  technicianId: string
+): Promise<Payment[]> => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/payments/technician/${encodeURIComponent(technicianId)}`,
+    { credentials: "include" }
+  );
+
+  // Read the JSON body first.
+  const data: PaymentsResponse = await res
+    .json()
+    .catch(() => ({ success: false }));
+
+  // Tell the caller when the request failed.
+  if (!res.ok) {
+    throw new Error(data.message || "Failed to load your payments.");
+  }
+
+  return data.data ?? [];
+};
+
 // GET /bookings/technician/:email — all bookings of one technician.
 export const getTechnicianBookings = async (
   email: string
@@ -340,22 +429,7 @@ export const deleteTechnicianService = async (
   return data;
 };
 
-// One service that a technician added.
-export type Service = {
-  _id: string;
-  title: string;
-  category: string;
-  description: string;
-  image: string;
-  basePrice: number;
-  estimatedDuration: string;
-  serviceMode: string;
-  serviceArea: string;
-  technicianEmail: string;
-  approvalStatus: "pending" | "approved" | "rejected";
-  isAvailable: boolean;
-  postedAt: string;
-};
+
 
 // GET /services/technician/:email — all services of one technician.
 export const getTechnicianServices = async (
