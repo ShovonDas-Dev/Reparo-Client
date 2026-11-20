@@ -45,14 +45,16 @@ export default function AlartDeleteBtn({
 
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
-      <AlertDialogTrigger asChild>
-        <Button
-          variant="outline"
-          size="xs"
-          disabled={booking.status !== "pending" || loading}
-        >
-          Cancel
-        </Button>
+      <AlertDialogTrigger
+        render={
+          <Button
+            variant="outline"
+            size="xs"
+            disabled={booking.status !== "pending" || loading}
+          />
+        }
+      >
+        Cancel
       </AlertDialogTrigger>
 
       <AlertDialogContent>

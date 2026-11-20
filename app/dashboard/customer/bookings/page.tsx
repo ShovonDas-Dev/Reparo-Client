@@ -14,23 +14,16 @@ import {
 import {
   cancelBooking,
   getCustomerBookings,
-  payBooking,
   type Booking,
 } from "@/lib/API/service";
 import { useSession } from "@/lib/auth-client";
 
 import AlartDeleteBtn from "./AlartDeleteBtn";
 import { useRouter } from "next/navigation";
-
-// Every status has a short label and a colour for the badge.
-const STATUS_MAP: Record<Booking["status"], { label: string; color: string }> =
-  {
-    pending: { label: "Requested", color: "bg-blue-100 text-blue-700" },
-    confirmed: { label: "Confirmed", color: "bg-purple-100 text-purple-700" },
-    in_progress: { label: "In progress", color: "bg-amber-100 text-amber-700" },
-    completed: { label: "Completed", color: "bg-green-100 text-green-700" },
-    cancelled: { label: "Cancelled", color: "bg-red-100 text-red-700" },
-  };
+import {
+  STATUS_MAP,
+  formatDate,
+} from "../rootComponents/bookingDisplay";
 
 // The choices of the "All statuses" dropdown.
 const filterOptions = [
@@ -41,21 +34,9 @@ const filterOptions = [
   })),
 ];
 
-// Turn "2026-11-20" into "20 Nov 2026".
-const formatDate = (value: string) => {
-  if (!value) return "-";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "-";
-  return date.toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-    timeZone: "UTC",
-  });
-};
-
 export default function CustomerBookingsPage() {
   const { data: session, isPending } = useSession();
+  const router = useRouter();
 
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
@@ -106,24 +87,16 @@ export default function CustomerBookingsPage() {
     }
   };
 
-  // Pay for a finished booking and load the list again.
-  const route = useRouter()
-  const handlePay = async (booking: Booking) => {
-    try {
-      route.push("/payment")
-      await payBooking(booking._id);
-      toast.success("Payment done. Thank you!");
-      await loadBookings();
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Could not pay.");
-    }
+  // Send the customer to the simulated checkout. The booking only becomes
+  // paid after the checkout page calls the backend.
+  const handlePay = (booking: Booking) => {
+    router.push(`/checkout?bookingId=${encodeURIComponent(booking._id)}`);
   };
 
   // Only the bookings that match the chosen status are shown.
   const visibleBookings = bookings.filter(
     (booking) => statusFilter === "all" || booking.status === statusFilter,
   );
-  console.log(visibleBookings);
   // The 3 cards are counted from the real list.
   const totalBookings = bookings.length;
   const activeBookings = bookings.filter(

@@ -1,55 +1,48 @@
 "use client";
 
-import { Suspense, useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { CheckCircle2, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { payBooking } from "@/lib/API/service";
-
-type Status = "loading" | "success" | "failed";
+import { getCustomerBookings, type Booking } from "@/lib/API/service";
+import { useSession } from "@/lib/auth-client";
 
 function SuccessContent() {
   const searchParams = useSearchParams();
-  const sessionId = searchParams.get("session_id") ?? "";
+  const bookingId = searchParams.get("bookingId") ?? "";
+  const { data: session, isPending } = useSession();
+  const customerId = session?.user?.id;
 
-  const [status, setStatus] = useState<Status>("loading");
-  // Ref guard so StrictMode / re-renders never call payBooking twice.
-  const ranRef = useRef(false);
+  const [booking, setBooking] = useState<Booking | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!sessionId || ranRef.current) return;
-    ranRef.current = true;
+    if (!customerId || !bookingId) return;
 
-    (async () => {
-      try {
-        const res = await fetch(
-          `/api/checkout_sessions/verify?session_id=${encodeURIComponent(sessionId)}`,
-        );
-        const data = (await res.json().catch(() => null)) as {
-          paid?: boolean;
-          bookingId?: string;
-        } | null;
+    let active = true;
 
-        if (!res.ok || !data?.paid || !data.bookingId) {
-          setStatus("failed");
-          return;
-        }
+    getCustomerBookings(customerId)
+      .then((bookings) => {
+        if (!active) return;
+        setBooking(bookings.find((item) => item._id === bookingId) ?? null);
+      })
+      .catch(() => {
+        if (active) setBooking(null);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
 
-        // Stripe says paid — mark the booking paid on our backend.
-        // The webhook does the same thing, so this is safe if it already ran.
-        try {
-          await payBooking(data.bookingId);
-        } catch {
-          // Already marked paid by the webhook — treat as success.
-        }
-        setStatus("success");
-      } catch {
-        setStatus("failed");
-      }
-    })();
-  }, [sessionId]);
+    return () => {
+      active = false;
+    };
+  }, [customerId, bookingId]);
 
-  if (status === "loading") {
+  const showLoading =
+    isPending || (loading && Boolean(customerId) && Boolean(bookingId));
+
+  if (showLoading) {
     return (
       <p className="py-10 text-center text-sm text-muted-foreground">
         Confirming your payment...
@@ -57,16 +50,54 @@ function SuccessContent() {
     );
   }
 
-  if (status === "failed") {
+  if (!customerId) {
     return (
       <div className="text-center">
-        <h1 className="text-2xl font-bold tracking-tight">
+        <h1 className="text-2xl font-bold tracking-tight">Please sign in</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Sign in to see the status of your payment.
+        </p>
+        <Button className="mt-6" render={<Link href="/sign-in" />}>
+          Sign in
+        </Button>
+      </div>
+    );
+  }
+
+  if (!booking) {
+    return (
+      <div className="text-center">
+        <h1 className="text-2xl font-bold tracking-tight">Booking not found</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          We could not find this booking under your account.
+        </p>
+        <Button
+          className="mt-6"
+          render={<Link href="/dashboard/customer/bookings" />}
+        >
+          Back to bookings
+        </Button>
+      </div>
+    );
+  }
+
+  if (booking.paymentStatus !== "paid") {
+    return (
+      <div className="text-center">
+        <XCircle
+          aria-hidden
+          className="mx-auto size-12 text-red-500"
+        />
+        <h1 className="mt-4 text-2xl font-bold tracking-tight">
           Payment not completed
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
           Your payment was not confirmed. You can try again from your bookings.
         </p>
-        <Button className="mt-6" render={<Link href="/dashboard/customer/bookings" />}>
+        <Button
+          className="mt-6"
+          render={<Link href="/dashboard/customer/bookings" />}
+        >
           Back to bookings
         </Button>
       </div>
@@ -75,13 +106,23 @@ function SuccessContent() {
 
   return (
     <div className="text-center">
-      <h1 className="text-2xl font-bold tracking-tight">
+      <CheckCircle2
+        aria-hidden
+        className="mx-auto size-12 text-green-500"
+      />
+      <h1 className="mt-4 text-2xl font-bold tracking-tight text-green-600 dark:text-green-400">
         Payment successful!
       </h1>
       <p className="mt-2 text-sm text-muted-foreground">
         Thank you — your booking has been marked as paid.
       </p>
-      <Button className="mt-6" render={<Link href="/dashboard/customer/bookings" />}>
+      <p className="mt-1 text-sm text-muted-foreground">
+        {booking.serviceName} · ৳{booking.amount.toLocaleString("en-US")}
+      </p>
+      <Button
+        className="mt-6"
+        render={<Link href="/dashboard/customer/bookings" />}
+      >
         Back to bookings
       </Button>
     </div>

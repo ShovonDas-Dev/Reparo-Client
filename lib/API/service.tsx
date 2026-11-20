@@ -126,6 +126,33 @@ type BookingActionResponse = {
   data?: Booking;
 };
 
+// One saved payment for a completed booking.
+export type Payment = {
+  _id: string;
+  bookingId: string;
+  customerId: string;
+  technicianId?: string;
+  amount: number;
+  currency: string;
+  method: "card";
+  status: "paid";
+  transactionId: string;
+  paidAt: string;
+  createdAt: string;
+};
+
+// The answer shape of the endpoints that send a list of payments.
+type PaymentsResponse = {
+  success: boolean;
+  message?: string;
+  data?: Payment[];
+};
+
+// The answer shape of PATCH /bookings/:id/pay.
+type PayBookingResponse = BookingActionResponse & {
+  payment?: Payment;
+};
+
 // POST /bookings — creates a new booking on the Express backend.
 export const AddBookingData = async (bookingData: BookingPayload) => {
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/bookings`, {
@@ -190,15 +217,23 @@ export const cancelBooking = async (bookingId: string) => {
   return data;
 };
 
-// PATCH /bookings/:id/pay — marks one booking as paid.
-export const payBooking = async (bookingId: string) => {
+// PATCH /bookings/:id/pay — pays for one booking and saves a payment record.
+// The backend checks that customerId owns the booking before marking it paid.
+export const payBooking = async (bookingId: string, customerId: string) => {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/bookings/${encodeURIComponent(bookingId)}/pay`,
-    { method: "PATCH" }
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({ customerId }),
+    }
   );
 
   // Read the JSON body first.
-  const data: BookingActionResponse = await res
+  const data: PayBookingResponse = await res
     .json()
     .catch(() => ({ success: false }));
 
@@ -208,6 +243,28 @@ export const payBooking = async (bookingId: string) => {
   }
 
   return data;
+};
+
+// GET /payments?customerId=... — all payments of one customer.
+export const getCustomerPayments = async (
+  customerId: string
+): Promise<Payment[]> => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/payments?customerId=${encodeURIComponent(customerId)}`,
+    { credentials: "include" }
+  );
+
+  // Read the JSON body first.
+  const data: PaymentsResponse = await res
+    .json()
+    .catch(() => ({ success: false }));
+
+  // Tell the caller when the request failed.
+  if (!res.ok) {
+    throw new Error(data.message || "Failed to load your payments.");
+  }
+
+  return data.data ?? [];
 };
 
 // GET /bookings/technician/:email — all bookings of one technician.
