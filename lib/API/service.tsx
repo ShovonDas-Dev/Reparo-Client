@@ -82,6 +82,7 @@ export type Service = {
   estimatedDuration: string;    
   serviceMode: string;
   serviceArea: string;
+  technicianName?: string;
   technicianEmail: string;
   approvalStatus: "pending" | "approved" | "rejected";
   isAvailable: boolean;
@@ -469,6 +470,59 @@ export const updateServiceAvailability = async (
 
   if (!res.ok) {
     throw new Error(data.message || "Failed to update service");
+  }
+
+  return data;
+};
+
+// The answer shape of GET /admin/services.
+type AdminServicesResponse = {
+  success: boolean;
+  message?: string;
+  data?: Service[];
+};
+
+// GET /admin/services — all services for the admin services page.
+export const getAdminServices = async (): Promise<Service[]> => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/admin/services`
+  );
+
+  // Read the JSON body first.
+  const data: AdminServicesResponse = await res
+    .json()
+    .catch(() => ({ success: false }));
+
+  // Tell the caller when the request failed.
+  if (!res.ok) {
+    throw new Error(data.message || "Failed to load services.");
+  }
+
+  return data.data ?? [];
+};
+
+// PATCH /admin/services/:id/approval — approves or rejects one service.
+export const updateServiceApproval = async (
+  serviceId: string,
+  approvalStatus: string
+) => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/admin/services/${encodeURIComponent(serviceId)}/approval`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ approvalStatus }),
+    }
+  );
+
+  // Read the JSON body first.
+  const data = await res.json().catch(() => ({}));
+
+  // Tell the caller when the request failed.
+  if (!res.ok) {
+    throw new Error(data.message || "Could not update the approval.");
   }
 
   return data;
