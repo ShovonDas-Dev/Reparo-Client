@@ -13,6 +13,7 @@ import {
   type Booking,
 } from "@/lib/API/service";
 import { useSession } from "@/lib/auth-client";
+import { getClientToken } from "@/lib/getClientToken";
 
 function CheckoutContent() {
   const searchParams = useSearchParams();
@@ -31,18 +32,26 @@ function CheckoutContent() {
 
     let active = true;
 
-    getCustomerBookings(customerId)
-      .then((bookings) => {
+    // Keep the checked value in a simple variable for the async function.
+    const customerMongoId = customerId;
+
+    async function load() {
+      try {
+        // Get the JWT for this signed-in customer.
+        const token = await getClientToken();
+        const bookings = await getCustomerBookings(customerMongoId, token);
+
         if (!active) return;
         setBooking(bookings.find((item) => item._id === bookingId) ?? null);
-      })
-      .catch((err: unknown) => {
+      } catch (err) {
         if (!active) return;
         setError(err instanceof Error ? err.message : "Could not load booking.");
-      })
-      .finally(() => {
+      } finally {
         if (active) setLoading(false);
-      });
+      }
+    }
+
+    load();
 
     return () => {
       active = false;
@@ -56,7 +65,10 @@ function CheckoutContent() {
     try {
       // Simulate the round-trip to Stripe Checkout before confirming.
       await new Promise((resolve) => setTimeout(resolve, 1200));
-      await payBooking(booking._id, customerId);
+
+      // Get the JWT for this signed-in customer.
+      const token = await getClientToken();
+      await payBooking(booking._id, customerId, token);
       router.push(`/success?bookingId=${encodeURIComponent(booking._id)}`);
     } catch (err) {
       toast.error(

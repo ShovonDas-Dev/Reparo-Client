@@ -11,6 +11,7 @@ import { authClient } from "@/lib/auth-client"; // tomar BetterAuth client (path
 
 import { ServicePayload } from "@/components/Technician/types";
 import { postService } from "@/lib/API/service";
+import { getClientToken } from "@/lib/getClientToken";
 
 
 export default  function  AddServicePage () {
@@ -33,8 +34,11 @@ export default  function  AddServicePage () {
   try {
     console.log("Service data:", serviceData);
 
+    // Get the JWT for this signed-in technician.
+    const token = await getClientToken();
+
     // Wait until API request completes
-    const response = await postService(serviceData);
+    const response = await postService(serviceData, token);
 
     console.log("Service response:", response);
 

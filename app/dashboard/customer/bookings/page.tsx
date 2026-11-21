@@ -17,6 +17,7 @@ import {
   type Booking,
 } from "@/lib/API/service";
 import { useSession } from "@/lib/auth-client";
+import { getClientToken } from "@/lib/getClientToken";
 
 import AlartDeleteBtn from "./AlartDeleteBtn";
 import { useRouter } from "next/navigation";
@@ -44,42 +45,57 @@ export default function CustomerBookingsPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [selected, setSelected] = useState<Booking | null>(null);
 
+  // Bumping this number loads the list again (used after a cancel).
+  const [reloadKey, setReloadKey] = useState(0);
+
   // The MongoDB _id of the logged in customer.
   const customerId = session?.user?.id;
 
   // Load the bookings of this customer from the backend.
-  // The same function is used again after a cancel or a pay.
-  const loadBookings = () => {
-    if (!customerId) return Promise.resolve();
-
-    return getCustomerBookings(customerId)
-      .then((data) => {
-        setBookings(data);
-        setError("");
-      })
-      .catch((err: unknown) => {
-        setError(err instanceof Error ? err.message : "Something went wrong.");
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  };
-
-  // Load the list as soon as we know who is logged in.
+  // The reload key runs this again after a cancel.
   useEffect(() => {
     if (!customerId) return;
-    loadBookings();
-    // We only want a new load when the customer changes. The buttons
-    // below reload the list by hand.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [customerId]);
+
+    // This flag stops us from saving data after the page is gone.
+    let active = true;
+
+    // Keep the checked value in a simple variable for the async function.
+    const customerMongoId = customerId;
+
+    async function load() {
+      try {
+        // Get the JWT for this signed-in customer.
+        const token = await getClientToken();
+        const data = await getCustomerBookings(customerMongoId, token);
+
+        if (!active) return;
+        setBookings(data);
+        setError("");
+      } catch (err) {
+        if (!active) return;
+        setError(err instanceof Error ? err.message : "Something went wrong.");
+      } finally {
+        if (active) setLoading(false);
+      }
+    }
+
+    load();
+
+    return () => {
+      active = false;
+    };
+  }, [customerId, reloadKey]);
 
   // Ask first, then cancel the booking and load the list again.
   const handleCancel = async (booking: Booking) => {
     try {
-      await cancelBooking(booking._id);
+      // Get the JWT for this signed-in customer.
+      const token = await getClientToken();
+      await cancelBooking(booking._id, token);
       toast.success("Booking cancelled.");
-      await loadBookings();
+
+      // Ask the effect to load the list again.
+      setReloadKey((key) => key + 1);
     } catch (err) {
       toast.error(
         err instanceof Error ? err.message : "Could not cancel the booking.",

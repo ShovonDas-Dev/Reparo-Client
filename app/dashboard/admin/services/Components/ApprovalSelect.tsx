@@ -4,6 +4,7 @@ import { useState, type ChangeEvent } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { updateServiceApproval } from "@/lib/API/service";
+import { getClientToken } from "@/lib/getClientToken";
 
 // The approval dropdown that saves straight away.
 type ApprovalSelectProps = {
@@ -33,7 +34,9 @@ export default function ApprovalSelect({
     setSaving(true);
 
     try {
-      await updateServiceApproval(serviceId, newStatus);
+      // Get the JWT for this signed-in admin, then send it with the request.
+      const token = await getClientToken();
+      await updateServiceApproval(serviceId, newStatus, token);
       toast.success("Approval updated");
       router.refresh();
     } catch (err) {

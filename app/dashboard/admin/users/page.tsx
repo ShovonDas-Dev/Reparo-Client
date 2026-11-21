@@ -1,4 +1,5 @@
 import { getUsers, type User } from "@/lib/API/service";
+import { getServerToken } from "@/lib/serverToken";
 
 import UserStatCards from "./Components/UserStatCards";
 import UsersTable from "./Components/UsersTable";
@@ -10,7 +11,9 @@ export default async function AllUserDashBoard() {
   let error = "";
 
   try {
-    users = await getUsers();
+    // Get the JWT for this signed-in admin from Better Auth.
+    const token = await getServerToken();
+    users = await getUsers(token);
   } catch (err) {
     error =
       err instanceof Error

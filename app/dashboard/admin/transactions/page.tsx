@@ -1,4 +1,5 @@
 import { getAdminPayments, type AdminPayment } from "@/lib/API/service";
+import { getServerToken } from "@/lib/serverToken";
 
 import TransactionStatCards from "./Components/TransactionStatCards";
 import TransactionsTable from "./Components/TransactionsTable";
@@ -10,7 +11,9 @@ export default async function AdminTransactionsPage() {
   let error = "";
 
   try {
-    payments = await getAdminPayments();
+    // Get the JWT for this signed-in admin from Better Auth.
+    const token = await getServerToken();
+    payments = await getAdminPayments(token);
   } catch (err) {
     error =
       err instanceof Error

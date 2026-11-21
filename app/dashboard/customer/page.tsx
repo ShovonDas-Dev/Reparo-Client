@@ -10,6 +10,7 @@ import {
   type Payment,
 } from "@/lib/API/service";
 import { useSession } from "@/lib/auth-client";
+import { getClientToken } from "@/lib/getClientToken";
 
 import PaymentBanner from "./rootComponents/PaymentBanner";
 import RecentBookings from "./rootComponents/RecentBookings";
@@ -58,25 +59,34 @@ export default function CustomerOverviewPage() {
     // This flag stops us from saving data after the page is gone.
     let active = true;
 
-    Promise.all([
-      getCustomerBookings(customerId),
-      getCustomerPayments(customerId),
-    ])
-      .then(([bookingList, paymentList]) => {
+    // Keep the checked value in a simple variable for the async function.
+    const customerMongoId = customerId;
+
+    async function load() {
+      try {
+        // Get the JWT for this signed-in customer.
+        const token = await getClientToken();
+
+        const [bookingList, paymentList] = await Promise.all([
+          getCustomerBookings(customerMongoId, token),
+          getCustomerPayments(customerMongoId, token),
+        ]);
+
         if (!active) return;
         setBookings(bookingList);
         setPayments(paymentList);
         setError("");
-      })
-      .catch((err: unknown) => {
+      } catch (err) {
         if (!active) return;
         const message =
           err instanceof Error ? err.message : "Something went wrong.";
         setError(message);
-      })
-      .finally(() => {
+      } finally {
         if (active) setLoading(false);
-      });
+      }
+    }
+
+    load();
 
     return () => {
       active = false;

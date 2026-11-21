@@ -9,6 +9,7 @@ import {
   type Payment,
 } from "@/lib/API/service";
 import { useSession } from "@/lib/auth-client";
+import { getClientToken } from "@/lib/getClientToken";
 
 const formatDate = (value: string) => {
   if (!value) return "-";
@@ -35,26 +36,35 @@ export default function CustomerPaymentsPage() {
 
     let active = true;
 
-    Promise.all([
-      getCustomerPayments(customerId),
-      getCustomerBookings(customerId),
-    ])
-      .then(([paymentList, bookingList]) => {
+    // Keep the checked value in a simple variable for the async function.
+    const customerMongoId = customerId;
+
+    async function load() {
+      try {
+        // Get the JWT for this signed-in customer.
+        const token = await getClientToken();
+
+        const [paymentList, bookingList] = await Promise.all([
+          getCustomerPayments(customerMongoId, token),
+          getCustomerBookings(customerMongoId, token),
+        ]);
+
         if (!active) return;
         setPayments(paymentList);
         setBookings(bookingList);
         setError("");
-      })
-      .catch((err: unknown) => {
+      } catch (err) {
         if (!active) return;
         const message =
           err instanceof Error ? err.message : "Could not load your payments.";
         setError(message);
         toast.error(message);
-      })
-      .finally(() => {
+      } finally {
         if (active) setLoading(false);
-      });
+      }
+    }
+
+    load();
 
     return () => {
       active = false;

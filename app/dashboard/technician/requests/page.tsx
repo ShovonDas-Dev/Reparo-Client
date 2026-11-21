@@ -9,6 +9,7 @@ import {
   type Booking,
 } from "@/lib/API/service";
 import { useSession } from "@/lib/auth-client";
+import { getClientToken } from "@/lib/getClientToken";
 
 // Every status has a short label and a colour for the badge.
 const STATUS_MAP: Record<Booking["status"], { label: string; color: string }> = {
@@ -55,42 +56,57 @@ export default function TechnicianRequests() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  // Bumping this number loads the list again (after a status change).
+  const [reloadKey, setReloadKey] = useState(0);
+
   // The email of the logged in technician.
   const email = session?.user?.email;
 
   // Load the bookings of this technician from the backend.
-  // The same function is used again after every status change.
-  const loadBookings = () => {
-    if (!email) return Promise.resolve();
-
-    return getTechnicianBookings(email)
-      .then((data) => {
-        setBookings(data);
-        setError("");
-      })
-      .catch((err: unknown) => {
-        setError(err instanceof Error ? err.message : "Something went wrong.");
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  };
-
-  // Load the list as soon as we know who is logged in.
+  // The reload key runs this again after every status change.
   useEffect(() => {
     if (!email) return;
-    loadBookings();
-    // We only want a new load when the technician changes. The buttons
-    // below reload the list by hand.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [email]);
+
+    // This flag stops us from saving data after the page is gone.
+    let active = true;
+
+    // Keep the checked value in a simple variable for the async function.
+    const technicianEmail = email;
+
+    async function load() {
+      try {
+        // Get the JWT for this signed-in technician.
+        const token = await getClientToken();
+        const data = await getTechnicianBookings(technicianEmail, token);
+
+        if (!active) return;
+        setBookings(data);
+        setError("");
+      } catch (err) {
+        if (!active) return;
+        setError(err instanceof Error ? err.message : "Something went wrong.");
+      } finally {
+        if (active) setLoading(false);
+      }
+    }
+
+    load();
+
+    return () => {
+      active = false;
+    };
+  }, [email, reloadKey]);
 
   // Move the booking to the next status and load the list again.
   const handleStatus = async (booking: Booking, status: Booking["status"]) => {
     try {
-      await updateBookingStatus(booking._id, status);
+      // Get the JWT for this signed-in technician.
+      const token = await getClientToken();
+      await updateBookingStatus(booking._id, status, token);
       toast.success("Booking updated.");
-      await loadBookings();
+
+      // Ask the effect to load the list again.
+      setReloadKey((key) => key + 1);
     } catch (err) {
       toast.error(
         err instanceof Error ? err.message : "Could not update the booking."

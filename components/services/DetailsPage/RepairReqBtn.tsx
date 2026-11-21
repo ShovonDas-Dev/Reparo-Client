@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { AddBookingData } from "@/lib/API/service";
+import { getClientToken } from "@/lib/getClientToken";
 import { toast } from "sonner";
 
 type RepairRequestForm = {
@@ -97,7 +98,10 @@ export default function RepairReqBtn({ serviceId }: { serviceId: string }) {
     setError("");
 
     try {
-      await AddBookingData(bookingData);
+      // Get the JWT for this signed-in customer.
+      const token = await getClientToken();
+
+      await AddBookingData(bookingData, token);
 
       toast.success("Your repair request has been sent successfully!");
 

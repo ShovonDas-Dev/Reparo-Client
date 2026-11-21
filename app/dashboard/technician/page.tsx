@@ -12,6 +12,7 @@ import {
   type Service,
 } from "@/lib/API/service";
 import { useSession } from "@/lib/auth-client";
+import { getClientToken } from "@/lib/getClientToken";
 
 import NewRequestsBanner from "./rootComponents/NewRequestsBanner";
 import RecentBookings from "./rootComponents/RecentBookings";
@@ -62,27 +63,37 @@ export default function TechnicianOverviewPage() {
     // This flag stops us from saving data after the page is gone.
     let active = true;
 
-    Promise.all([
-      getTechnicianBookings(email),
-      getTechnicianServices(email),
-      getTechnicianPayments(technicianId),
-    ])
-      .then(([bookingList, serviceList, paymentList]) => {
+    // Keep the checked values in simple variables for the async function.
+    const technicianEmail = email;
+    const technicianMongoId = technicianId;
+
+    async function load() {
+      try {
+        // Get the JWT for this signed-in technician.
+        const token = await getClientToken();
+
+        const [bookingList, serviceList, paymentList] = await Promise.all([
+          getTechnicianBookings(technicianEmail, token),
+          getTechnicianServices(technicianEmail, token),
+          getTechnicianPayments(technicianMongoId, token),
+        ]);
+
         if (!active) return;
         setBookings(bookingList);
         setServices(serviceList);
         setPayments(paymentList);
         setError("");
-      })
-      .catch((err: unknown) => {
+      } catch (err) {
         if (!active) return;
         const message =
           err instanceof Error ? err.message : "Something went wrong.";
         setError(message);
-      })
-      .finally(() => {
+      } finally {
         if (active) setLoading(false);
-      });
+      }
+    }
+
+    load();
 
     return () => {
       active = false;

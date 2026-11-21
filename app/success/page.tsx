@@ -7,6 +7,7 @@ import { CheckCircle2, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getCustomerBookings, type Booking } from "@/lib/API/service";
 import { useSession } from "@/lib/auth-client";
+import { getClientToken } from "@/lib/getClientToken";
 
 function SuccessContent() {
   const searchParams = useSearchParams();
@@ -22,17 +23,25 @@ function SuccessContent() {
 
     let active = true;
 
-    getCustomerBookings(customerId)
-      .then((bookings) => {
+    // Keep the checked value in a simple variable for the async function.
+    const customerMongoId = customerId;
+
+    async function load() {
+      try {
+        // Get the JWT for this signed-in customer.
+        const token = await getClientToken();
+        const bookings = await getCustomerBookings(customerMongoId, token);
+
         if (!active) return;
         setBooking(bookings.find((item) => item._id === bookingId) ?? null);
-      })
-      .catch(() => {
+      } catch {
         if (active) setBooking(null);
-      })
-      .finally(() => {
+      } finally {
         if (active) setLoading(false);
-      });
+      }
+    }
+
+    load();
 
     return () => {
       active = false;

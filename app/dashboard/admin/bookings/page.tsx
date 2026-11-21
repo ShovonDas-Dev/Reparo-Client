@@ -1,4 +1,5 @@
 import { getAdminBookings, type Booking } from "@/lib/API/service";
+import { getServerToken } from "@/lib/serverToken";
 
 import BookingStatCards from "./Components/BookingStatCards";
 import BookingsTable from "./Components/BookingsTable";
@@ -10,7 +11,9 @@ export default async function AdminBookingsPage() {
   let error = "";
 
   try {
-    bookings = await getAdminBookings();
+    // Get the JWT for this signed-in admin from Better Auth.
+    const token = await getServerToken();
+    bookings = await getAdminBookings(token);
   } catch (err) {
     error =
       err instanceof Error

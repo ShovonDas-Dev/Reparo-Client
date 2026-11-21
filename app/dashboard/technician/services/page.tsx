@@ -12,6 +12,7 @@ import {
   type Service,
 } from "@/lib/API/service";
 import { useSession } from "@/lib/auth-client";
+import { getClientToken } from "@/lib/getClientToken";
 
 // Every approval status has a short label and a colour.
 const APPROVAL_MAP: Record<
@@ -40,44 +41,59 @@ export default function TechnicianServicesPage() {
   const [error, setError] = useState("");
   const [approvalFilter, setApprovalFilter] = useState("all");
 
+  // Bumping this number loads the list again (after a change or a delete).
+  const [reloadKey, setReloadKey] = useState(0);
+
   // The email of the logged in technician.
   const email = session?.user?.email;
 
   // Load the services of this technician from the backend.
-  // The same function is used again after a change or a delete.
-  const loadServices = () => {
-    if (!email) return Promise.resolve();
-
-    return getTechnicianServices(email)
-      .then((data) => {
-        setServices(data);
-        setError("");
-      })
-      .catch((err: unknown) => {
-        setError(err instanceof Error ? err.message : "Something went wrong.");
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  };
-
-  // Load the list as soon as we know who is logged in.
+  // The reload key runs this again after a change or a delete.
   useEffect(() => {
     if (!email) return;
-    loadServices();
-    // We only want a new load when the technician changes. The switch
-    // and the delete button reload the list by hand.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [email]);
+
+    // This flag stops us from saving data after the page is gone.
+    let active = true;
+
+    // Keep the checked value in a simple variable for the async function.
+    const technicianEmail = email;
+
+    async function load() {
+      try {
+        // Get the JWT for this signed-in technician.
+        const token = await getClientToken();
+        const data = await getTechnicianServices(technicianEmail, token);
+
+        if (!active) return;
+        setServices(data);
+        setError("");
+      } catch (err) {
+        if (!active) return;
+        setError(err instanceof Error ? err.message : "Something went wrong.");
+      } finally {
+        if (active) setLoading(false);
+      }
+    }
+
+    load();
+
+    return () => {
+      active = false;
+    };
+  }, [email, reloadKey]);
 
   // Turn one service on or off, then load the list again.
   const handleToggle = async (service: Service) => {
     const newValue = !service.isAvailable;
 
     try {
-      await updateServiceAvailability(service._id, newValue);
+      // Get the JWT for this signed-in technician.
+      const token = await getClientToken();
+      await updateServiceAvailability(service._id, newValue, token);
       toast.success(newValue ? "Service is now on." : "Service is now off.");
-      await loadServices();
+
+      // Ask the effect to load the list again.
+      setReloadKey((key) => key + 1);
     } catch (err) {
       toast.error(
         err instanceof Error ? err.message : "Could not update the service.",
@@ -95,9 +111,13 @@ export default function TechnicianServicesPage() {
     if (!confirmed) return;
 
     try {
-      await deleteTechnicianService(service._id, email);
+      // Get the JWT for this signed-in technician.
+      const token = await getClientToken();
+      await deleteTechnicianService(service._id, email, token);
       toast.success("Service deleted.");
-      await loadServices();
+
+      // Ask the effect to load the list again.
+      setReloadKey((key) => key + 1);
     } catch (err) {
       toast.error(
         err instanceof Error ? err.message : "Could not delete the service.",

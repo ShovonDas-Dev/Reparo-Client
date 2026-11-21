@@ -1,4 +1,5 @@
 import { getAdminServices, type Service } from "@/lib/API/service";
+import { getServerToken } from "@/lib/serverToken";
 
 import ServiceStatCards from "./Components/ServiceStatCards";
 import ServicesTable from "./Components/ServicesTable";
@@ -10,7 +11,9 @@ export default async function AdminServicesPage() {
   let error = "";
 
   try {
-    services = await getAdminServices();
+    // Get the JWT for this signed-in admin from Better Auth.
+    const token = await getServerToken();
+    services = await getAdminServices(token);
   } catch (err) {
     error =
       err instanceof Error

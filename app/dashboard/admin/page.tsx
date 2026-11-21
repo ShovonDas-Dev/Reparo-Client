@@ -8,6 +8,7 @@ import {
   type Service,
   type User,
 } from "@/lib/API/service";
+import { getServerToken } from "@/lib/serverToken";
 import ErrorFallback from "@/components/MyUI/ErrorFallback";
 
 import BookingStatusSummary from "./rootComponents/BookingStatusSummary";
@@ -28,12 +29,15 @@ export default async function AdminDashboardPage() {
 
   // Load the four lists at the same time so the page opens fast.
   try {
+    // Get the JWT for this signed-in admin from Better Auth.
+    const token = await getServerToken();
+
     const [paymentList, bookingList, userList, serviceList] =
       await Promise.all([
-        getAdminPayments(),
-        getAdminBookings(),
-        getUsers(),
-        getAdminServices(),
+        getAdminPayments(token),
+        getAdminBookings(token),
+        getUsers(token),
+        getAdminServices(token),
       ]);
 
     payments = paymentList;

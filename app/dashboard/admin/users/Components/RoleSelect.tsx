@@ -4,6 +4,7 @@ import { useState, type ChangeEvent } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { updateCustomerRole } from "@/lib/API/service";
+import { getClientToken } from "@/lib/getClientToken";
 
 // The role dropdown that changes a user's role straight away.
 type RoleSelectProps = {
@@ -30,7 +31,9 @@ export default function RoleSelect({ userId, currentRole }: RoleSelectProps) {
     setSaving(true);
 
     try {
-      await updateCustomerRole(userId, newRole);
+      // Get the JWT for this signed-in admin, then send it with the request.
+      const token = await getClientToken();
+      await updateCustomerRole(userId, newRole, token);
       toast.success("Role updated");
       router.refresh();
     } catch (err) {

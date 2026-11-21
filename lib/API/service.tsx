@@ -1,6 +1,13 @@
 import { ServicesResponse } from "../type";
 import { ServicePayload } from "@/components/Technician/types";
 
+// Every protected request carries the Better Auth JWT in this header.
+const authHeaders = (token: string) => ({
+  "Content-Type": "application/json",
+  Authorization: `Bearer ${token}`,
+});
+
+
 // Query parameters supported by GET /services.
 export type ServiceQueryParams = {
   search?: string;
@@ -112,16 +119,18 @@ export type User = {
 };
 
 // GET /users — all user accounts for the admin users page.
-export const getUsers = async (): Promise<User[]> => {
+export const getUsers = async (token: string): Promise<User[]> => {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/users`
+    `${process.env.NEXT_PUBLIC_API_URL}/users`,
+    { headers: authHeaders(token) }
   );
 
-  if (!res.ok) {
-    throw new Error("Failed to fetch users");
-  }
+  // Read the JSON body first, so a 401 / 403 can show its message.
+  const data = await res.json().catch(() => ({}));
 
-  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.message || "Failed to fetch users");
+  }
 
   // Make sure the server really sent a list before using it.
   if (!Array.isArray(data)) {
@@ -132,12 +141,16 @@ export const getUsers = async (): Promise<User[]> => {
 };
 
 // Change the role of one user (customer, technician or admin)
-export const updateCustomerRole = async (userId: string, role: string) => {
+export const updateCustomerRole = async (
+  userId: string,
+  role: string,
+  token: string,
+) => {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/user/${userId}/role`,
     {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
+      headers: authHeaders(token),
       body: JSON.stringify({ role }),
     },  
   );
@@ -155,23 +168,24 @@ export const updateCustomerRole = async (userId: string, role: string) => {
 // when tecnician added post then work this function
 // The technician form sends a ServicePayload (its serviceMode is a plain string).
 
-export const postService = async (serviceData: ServicePayload ) => {
+export const postService = async (serviceData: ServicePayload, token: string) => {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/services`,
     {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: authHeaders(token),
       body: JSON.stringify(serviceData),
     }
   );
 
+  // Read the JSON body first, so a 401 / 403 can show its message.
+  const data = await res.json().catch(() => ({}));
+
   if (!res.ok) {
-    throw new Error("Failed to add service");
+    throw new Error(data.message || "Failed to add service");
   }
 
-  return res.json();
+  return data;
 };
 
 // GET /services — filters, sorting and pagination all come from the URL.
@@ -240,12 +254,13 @@ export const ServiceDetails = async (id: string) => {
 
 
 // POST /bookings — creates a new booking on the Express backend.
-export const AddBookingData = async (bookingData: BookingPayload) => {
+export const AddBookingData = async (
+  bookingData: BookingPayload,
+  token: string,
+) => {
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/bookings`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: authHeaders(token),
     body: JSON.stringify(bookingData),
   });
 
@@ -264,10 +279,12 @@ export const AddBookingData = async (bookingData: BookingPayload) => {
 
 // GET /bookings/customer/:customerId — all bookings of one customer.
 export const getCustomerBookings = async (
-  customerId: string
+  customerId: string,
+  token: string,
 ): Promise<Booking[]> => {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/bookings/customer/${encodeURIComponent(customerId)}`
+    `${process.env.NEXT_PUBLIC_API_URL}/bookings/customer/${encodeURIComponent(customerId)}`,
+    { headers: authHeaders(token) }
   );
 
   // Read the JSON body first.
@@ -284,10 +301,10 @@ export const getCustomerBookings = async (
 };
 
 // PATCH /bookings/:id/cancel — cancels one booking.
-export const cancelBooking = async (bookingId: string) => {
+export const cancelBooking = async (bookingId: string, token: string) => {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/bookings/${encodeURIComponent(bookingId)}/cancel`,
-    { method: "PATCH" }
+    { method: "PATCH", headers: authHeaders(token) }
   );
 
   // Read the JSON body first.
@@ -305,15 +322,16 @@ export const cancelBooking = async (bookingId: string) => {
 
 // PATCH /bookings/:id/pay — pays for one booking and saves a payment record.
 // The backend checks that customerId owns the booking before marking it paid.
-export const payBooking = async (bookingId: string, customerId: string) => {
+export const payBooking = async (
+  bookingId: string,
+  customerId: string,
+  token: string,
+) => {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/bookings/${encodeURIComponent(bookingId)}/pay`,
     {
       method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
+      headers: authHeaders(token),
       body: JSON.stringify({ customerId }),
     }
   );
@@ -333,11 +351,12 @@ export const payBooking = async (bookingId: string, customerId: string) => {
 
 // GET /payments?customerId=... — all payments of one customer.
 export const getCustomerPayments = async (
-  customerId: string
+  customerId: string,
+  token: string,
 ): Promise<Payment[]> => {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/payments?customerId=${encodeURIComponent(customerId)}`,
-    { credentials: "include" }
+    { headers: authHeaders(token) }
   );
 
   // Read the JSON body first.
@@ -355,11 +374,12 @@ export const getCustomerPayments = async (
 
 // GET /payments/technician/:technicianId — all payments of one technician.
 export const getTechnicianPayments = async (
-  technicianId: string
+  technicianId: string,
+  token: string,
 ): Promise<Payment[]> => {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/payments/technician/${encodeURIComponent(technicianId)}`,
-    { credentials: "include" }
+    { headers: authHeaders(token) }
   );
 
   // Read the JSON body first.
@@ -377,10 +397,12 @@ export const getTechnicianPayments = async (
 
 // GET /bookings/technician/:email — all bookings of one technician.
 export const getTechnicianBookings = async (
-  email: string
+  email: string,
+  token: string,
 ): Promise<Booking[]> => {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/bookings/technician/${encodeURIComponent(email)}`
+    `${process.env.NEXT_PUBLIC_API_URL}/bookings/technician/${encodeURIComponent(email)}`,
+    { headers: authHeaders(token) }
   );
 
   // Read the JSON body first.
@@ -399,15 +421,14 @@ export const getTechnicianBookings = async (
 // PATCH /bookings/:id/status — moves one booking to a new status.
 export const updateBookingStatus = async (
   bookingId: string,
-  status: Booking["status"]
+  status: Booking["status"],
+  token: string,
 ) => {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/bookings/${encodeURIComponent(bookingId)}/status`,
     {
       method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: authHeaders(token),
       body: JSON.stringify({ status }),
     }
   );
@@ -431,11 +452,13 @@ export const updateBookingStatus = async (
 export const deleteTechnicianService = async (
   id: string,
   email: string,
+  token: string,
 ) => {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/services/technician/${id}/${encodeURIComponent(email)}`,
     {
       method: "DELETE",
+      headers: authHeaders(token),
     },
   );
 
@@ -453,9 +476,11 @@ export const deleteTechnicianService = async (
 // GET /services/technician/:email — all services of one technician.
 export const getTechnicianServices = async (
   email: string,
+  token: string,
 ): Promise<Service[]> => {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/services/technician/${encodeURIComponent(email)}`,
+    { headers: authHeaders(token) },
   );
 
   // Read the JSON body first.
@@ -471,15 +496,14 @@ export const getTechnicianServices = async (
 // Turn a service on or off (true = available, false = not available)
 export const updateServiceAvailability = async (
   serviceId: string,
-  isAvailable: boolean
+  isAvailable: boolean,
+  token: string,
 ) => {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/services/technician/${serviceId}/availability`,
     {
       method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: authHeaders(token),
       body: JSON.stringify({ isAvailable }),
     }
   );
@@ -501,9 +525,10 @@ type AdminServicesResponse = {
 };
 
 // GET /admin/services — all services for the admin services page.
-export const getAdminServices = async (): Promise<Service[]> => {
+export const getAdminServices = async (token: string): Promise<Service[]> => {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/admin/services`
+    `${process.env.NEXT_PUBLIC_API_URL}/admin/services`,
+    { headers: authHeaders(token) }
   );
 
   // Read the JSON body first.
@@ -522,15 +547,14 @@ export const getAdminServices = async (): Promise<Service[]> => {
 // PATCH /admin/services/:id/approval — approves or rejects one service.
 export const updateServiceApproval = async (
   serviceId: string,
-  approvalStatus: string
+  approvalStatus: string,
+  token: string,
 ) => {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/admin/services/${encodeURIComponent(serviceId)}/approval`,
     {
       method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: authHeaders(token),
       body: JSON.stringify({ approvalStatus }),
     }
   );
@@ -547,9 +571,10 @@ export const updateServiceApproval = async (
 };
 
 // GET /admin/bookings — every booking of every customer for the admin page.
-export const getAdminBookings = async (): Promise<Booking[]> => {
+export const getAdminBookings = async (token: string): Promise<Booking[]> => {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/admin/bookings`
+    `${process.env.NEXT_PUBLIC_API_URL}/admin/bookings`,
+    { headers: authHeaders(token) }
   );
 
   // Read the JSON body first.
@@ -592,9 +617,10 @@ type AdminPaymentsResponse = {
 };
 
 // GET /admin/payments — every payment record for the admin page.
-export const getAdminPayments = async (): Promise<AdminPayment[]> => {
+export const getAdminPayments = async (token: string): Promise<AdminPayment[]> => {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/admin/payments`
+    `${process.env.NEXT_PUBLIC_API_URL}/admin/payments`,
+    { headers: authHeaders(token) }
   );
 
   // Read the JSON body first.
@@ -608,4 +634,88 @@ export const getAdminPayments = async (): Promise<AdminPayment[]> => {
   }
 
   return data.data ?? [];
+};
+
+
+
+
+
+
+// Profile er type
+export type Profile = {
+  _id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  address?: string;
+  image?: string;
+  role: "customer" | "technician" | "admin";
+  createdAt?: string;
+};
+
+// Get profile (email diye)
+export const getProfile = async (
+  email: string,
+  token: string
+): Promise<Profile> => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/profile?email=${encodeURIComponent(email)}`,
+    { cache: "no-store", headers: authHeaders(token) }
+  );
+
+  // Read the JSON body first.
+  const data = await res.json().catch(() => ({}));
+
+  // Tell the caller when the request failed.
+  if (!res.ok) {
+    throw new Error(data.message || "Could not load the profile.");
+  }
+
+  return data.data;
+};
+
+// Update profile (name, phone, address, image)
+export const updateProfile = async (
+  email: string,
+  updates: {
+    name?: string;
+    phone?: string;
+    address?: string;
+    image?: string;
+  },
+  token: string
+) => {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile`, {
+    method: "PATCH",
+    headers: authHeaders(token),
+    body: JSON.stringify({ email, ...updates }),
+  });
+
+  const data = await res.json().catch(() => ({}));
+
+  if (!res.ok) {
+    throw new Error(data.message || "Could not update the profile.");
+  }
+
+  return data;
+};
+
+// imgbb te image upload kore direct URL ferot dey
+export const uploadImage = async (file: File): Promise<string> => {
+  const formData = new FormData();
+  formData.append("image", file);
+
+  const res = await fetch(
+    `https://api.imgbb.com/1/upload?key=${process.env.NEXT_PUBLIC_IMGBB_KEY}`,
+    { method: "POST", body: formData }
+  );
+
+  const data = await res.json().catch(() => ({}));
+
+  if (!res.ok || !data.success) {
+    throw new Error("Image upload failed.");
+  }
+
+  // i.ibb.co direct link
+  return data.data.url;
 };

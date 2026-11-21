@@ -1,6 +1,7 @@
 import { betterAuth } from "better-auth";
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
 import { APIError, createAuthMiddleware } from "better-auth/api";
+import { jwt } from "better-auth/plugins";
 import { MongoClient } from "mongodb";
 
 const user = encodeURIComponent(process.env.DB_USER as string);
@@ -34,6 +35,19 @@ export const auth = betterAuth({
       },
     },
   },
+  plugins: [
+    // Signs JWTs for the Express backend. The backend reads these three
+    // fields from the token, so they must be in the payload.
+    jwt({
+      jwt: {
+        definePayload: ({ user }) => ({
+          id: user.id,
+          email: user.email,
+          role: user.role,
+        }),
+      },
+    }),
+  ],
   hooks: {
 
     before: createAuthMiddleware(async (ctx) => {

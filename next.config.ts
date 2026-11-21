@@ -9,15 +9,15 @@ const nextConfig: NextConfig = {
   partialPrefetching: true,
   images: {
     remotePatterns: [
-      {
+       {
         protocol: "https",
         hostname: "images.unsplash.com",
         pathname: "/**",
       },
       {
-        protocol:"https",
-        hostname:"loremflickr.com",
-        pathname:"/**"
+        protocol: "https",
+        hostname: "i.ibb.co",
+        pathname: "/**",
       },
     ],
   },
