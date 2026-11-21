@@ -5,6 +5,7 @@ import HowItWorks from "@/components/Home/HowItWorks";
 import PromiseSection from "@/components/Home/promise-section";
 import ServiceCaregorise from "@/components/Home/ServiceCategories/ServiceCaregorise";
 import TestimonialsSection from "@/components/Home/testimonials-section";
+import FeaturedService from "@/components/Home/FeaturedService";
 
 export default function Home() {
   return (
@@ -12,6 +13,7 @@ export default function Home() {
       <main>
         <HeroSection/>
         <ServiceCaregorise/>
+        <FeaturedService/>
         <HowItWorks/>
         <PromiseSection/>
         <TestimonialsSection/>

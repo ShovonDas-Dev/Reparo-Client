@@ -1,4 +1,7 @@
+"use client"
+
 import type { ReactNode } from "react"
+import { motion, useReducedMotion } from "motion/react"
 
 type Step = {
   number: string
@@ -104,14 +107,26 @@ const STEPS: Step[] = [
 ]
 
 export default function HowItWorks() {
+  // true when the visitor asked their device for less motion
+  const prefersReducedMotion = useReducedMotion()
+
   return (
     <section
       aria-labelledby="how-it-works-heading"
       className="bg-[#edf0e9] px-5 py-16 dark:bg-[#16211b] md:px-8 md:py-20 lg:px-12"
     >
       <div className="mx-auto w-full max-w-7xl">
-        {/* Section header: eyebrow, heading and description, centered */}
-        <div className="mx-auto max-w-xl text-center">
+        {/* Section header: it fades in once when it comes into view */}
+        <motion.div
+          initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
+          whileInView={{
+            opacity: 1,
+            y: 0,
+            transition: { duration: 0.6, ease: "easeOut" },
+          }}
+          viewport={{ once: true, amount: 0.4 }}
+          className="mx-auto max-w-xl text-center"
+        >
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#717970] dark:text-[#a9b3a6]">
             From broken to back
           </p>
@@ -128,14 +143,32 @@ export default function HowItWorks() {
             We make getting something repaired feel like the easiest thing on
             your list.
           </p>
-        </div>
+        </motion.div>
 
         {/* Steps: 1 column on mobile, 2 on tablet, 4 on desktop */}
         <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {STEPS.map((step) => (
-            <div
+          {STEPS.map((step, index) => (
+            // Each card comes in a little after the one before it,
+            // and lifts a little when the mouse is over it.
+            <motion.div
               key={step.number}
-              className="group relative flex flex-col rounded-xl border border-[#e3e8dd] bg-[#f9faf7] p-6 transition-all hover:-translate-y-1 hover:border-[#cfd8c8] hover:shadow-md dark:border-[#24302a] dark:bg-[#1b2620] dark:hover:border-[#3a4a41]"
+              initial={prefersReducedMotion ? false : { opacity: 0, y: 24 }}
+              whileInView={{
+                opacity: 1,
+                y: 0,
+                transition: {
+                  duration: 0.5,
+                  delay: index * 0.12,
+                  ease: "easeOut",
+                },
+              }}
+              whileHover={
+                prefersReducedMotion
+                  ? undefined
+                  : { y: -4, transition: { duration: 0.2 } }
+              }
+              viewport={{ once: true, amount: 0.3 }}
+              className="group relative flex flex-col rounded-xl border border-[#e3e8dd] bg-[#f9faf7] p-6 transition-[border-color,box-shadow] hover:border-[#cfd8c8] hover:shadow-md dark:border-[#24302a] dark:bg-[#1b2620] dark:hover:border-[#3a4a41]"
             >
               <span className="absolute right-4 top-4 text-[11px] font-medium tracking-[0.1em] text-[#9aa398] dark:text-[#7c857c]">
                 {step.number}
@@ -147,7 +180,7 @@ export default function HowItWorks() {
               <p className="mt-2 text-sm leading-relaxed text-[#7c857c] dark:text-[#9aa398]">
                 {step.description}
               </p>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>

@@ -1,3 +1,5 @@
+"use client"
+
 import Link from "next/link"
 import {
   ArrowRight,
@@ -11,6 +13,7 @@ import {
   ArrowUpRight,
   type LucideIcon,
 } from "lucide-react"
+import { motion, useReducedMotion } from "motion/react"
 
 type ServiceCategory = {
   title: string
@@ -74,40 +77,79 @@ const SERVICE_CATEGORIES: ServiceCategory[] = [
   },
 ]
 
-function CategoryCard({ category }: { category: ServiceCategory }) {
+type CategoryCardProps = {
+  category: ServiceCategory
+  // The position of the card. Used to show the cards one after another.
+  index: number
+}
+
+function CategoryCard({ category, index }: CategoryCardProps) {
   const Icon = category.icon
 
+  // true when the visitor asked their device for less motion
+  const prefersReducedMotion = useReducedMotion()
+
   return (
-    <Link
-      href={category.href}
-      className="group flex items-center gap-4 rounded-2xl border border-border bg-card p-5 transition-all hover:-translate-y-1 hover:border-input hover:shadow-md"
+    // The card slides up when it comes into view, and lifts a little on hover.
+    <motion.div
+      initial={prefersReducedMotion ? false : { opacity: 0, y: 24 }}
+      whileInView={{
+        opacity: 1,
+        y: 0,
+        // Each card starts a little later than the one before it.
+        transition: { duration: 0.5, delay: index * 0.07, ease: "easeOut" },
+      }}
+      whileHover={
+        prefersReducedMotion
+          ? undefined
+          : { y: -4, transition: { duration: 0.2 } }
+      }
+      viewport={{ once: true, amount: 0.3 }}
     >
-      <span
-        className={`grid size-12 shrink-0 place-items-center rounded-xl ${category.tileClasses}`}
+      <Link
+        href={category.href}
+        className="group flex items-center gap-4 rounded-2xl border border-border bg-card p-5 transition-[border-color,box-shadow] hover:border-input hover:shadow-md"
       >
-        <Icon aria-hidden className="size-6" strokeWidth={2} />
-      </span>
-      <span>
-        <span className="block text-sm font-semibold">{category.title}</span>
-        <span className="mt-0.5 block text-xs text-muted-foreground">
-          {category.description}
+        <span
+          className={`grid size-12 shrink-0 place-items-center rounded-xl ${category.tileClasses}`}
+        >
+          <Icon aria-hidden className="size-6" strokeWidth={2} />
         </span>
-      </span>
-      <span className="ml-auto grid size-8 shrink-0 place-items-center rounded-full bg-muted text-muted-foreground opacity-0 transition-all group-hover:opacity-100">
-        <ArrowUpRight aria-hidden className="size-4" />
-      </span>
-    </Link>
+        <span>
+          <span className="block text-sm font-semibold">{category.title}</span>
+          <span className="mt-0.5 block text-xs text-muted-foreground">
+            {category.description}
+          </span>
+        </span>
+        <span className="ml-auto grid size-8 shrink-0 place-items-center rounded-full bg-muted text-muted-foreground opacity-0 transition-all group-hover:opacity-100">
+          <ArrowUpRight aria-hidden className="size-4" />
+        </span>
+      </Link>
+    </motion.div>
   )
 }
 
 export default function ServiceCaregorise() {
+  // true when the visitor asked their device for less motion
+  const prefersReducedMotion = useReducedMotion()
+
   return (
     <section
       aria-labelledby="service-categories-heading"
       className="mx-auto w-full max-w-7xl px-5 py-16 md:px-8 md:py-20 lg:px-12"
     >
-      {/* Section header: eyebrow + heading on the left, browse link on the right */}
-      <div className="flex flex-wrap items-end justify-between gap-6">
+      {/* Section header: eyebrow + heading on the left, browse link on the right.
+          It fades in once when it comes into view. */}
+      <motion.div
+        initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
+        whileInView={{
+          opacity: 1,
+          y: 0,
+          transition: { duration: 0.6, ease: "easeOut" },
+        }}
+        viewport={{ once: true, amount: 0.4 }}
+        className="flex flex-wrap items-end justify-between gap-6"
+      >
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
             A good place to start
@@ -130,12 +172,12 @@ export default function ServiceCaregorise() {
             className="size-4 transition-transform group-hover:translate-x-0.5"
           />
         </Link>
-      </div>
+      </motion.div>
 
       {/* Category cards: 1 column on mobile, 2 on small, 3 on medium, 4 on large */}
       <div className="mt-8 grid gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
-        {SERVICE_CATEGORIES.map((category) => (
-          <CategoryCard key={category.title} category={category} />
+        {SERVICE_CATEGORIES.map((category, index) => (
+          <CategoryCard key={category.title} category={category} index={index} />
         ))}
       </div>
     </section>

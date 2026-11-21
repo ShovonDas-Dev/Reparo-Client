@@ -25,7 +25,12 @@ function LayoutGate({ children }: { children: ReactNode }) {
 
       {children}
 
-      {!hideLayout && <Footer />}
+      {/* The footer is hidden when the page contains data-not-found (the 404 page) */}
+      {!hideLayout && (
+        <div className="[body:has([data-not-found])_&]:hidden">
+          <Footer />
+        </div>
+      )}
     </>
   );
 }

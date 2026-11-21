@@ -211,6 +211,20 @@ export const getService = async (
   };
 };
 
+export const getFeaturedServices = async (): Promise<Service[]> => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/services?limit=3&sort=newest`,
+    { cache: "no-store" },
+  );
+
+  if (!res.ok) {
+    throw new Error("Could not load services.");
+  }
+
+  const data = await res.json();
+  return data.services;
+};
+
 
 export const ServiceDetails = async (id: string) => {
   const response = await fetch(

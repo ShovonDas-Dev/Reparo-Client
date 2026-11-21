@@ -1,12 +1,8 @@
-import HeroSection from '@/components/About/HeroSection'
-import React from 'react'
+import HowItWorks from "@/components/About/HowItWorks"
 
+// About page: Navbar and Footer come from the layout.
 const About = () => {
-  return (
-    <div>
-        <HeroSection/>
-    </div>
-  )
+  return <HowItWorks />
 }
 
 export default About
