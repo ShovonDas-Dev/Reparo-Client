@@ -29,24 +29,37 @@ export default  function  AddServicePage () {
 
 
   // Add button e click korle ei function chole
-  const handleAdd = async (serviceData : ServicePayload) => {
+  const handleAdd = async (serviceData: ServicePayload) => {
+  try {
     console.log("Service data:", serviceData);
 
-    const response =  postService(serviceData)
+    // Wait until API request completes
+    const response = await postService(serviceData);
 
-    console.log(response)
-  
+    console.log("Service response:", response);
 
-toast("New Service Added!", {
-  description: "Your service has been successfully added.",
-  action: {
-    label: "View",
-    onClick: () => {
-      console.log("View service clicked");
-    },
-  },
-});
-  };
+    // Show success toast
+    toast("New Service Added!", {
+      description: "Your service has been successfully added.",
+      action: {
+        label: "View",
+        onClick: () => {
+          console.log("View service clicked");
+        },
+      },
+    });
+
+  } catch (error) {
+    console.error("Service creation failed:", error);
+
+    toast.error("Failed to add service!", {
+      description:
+        error instanceof Error
+          ? error.message
+          : "Something went wrong. Please try again.",
+    });
+  }
+};
 
   return (
     <div className="mx-auto w-full max-w-4xl">
@@ -67,13 +80,3 @@ toast("New Service Added!", {
   );
 }
 
-/* ------------------------------------------------------------------
-   Pore Update korar somoy (my-services page e) ei vabe use korba:
-
-   <ServiceForm
-     technician={technician}
-     initialData={service}            // purono service data
-     onSubmit={handleUpdate}          // PATCH /api/services/:id
-     submitLabel="Update Service"
-   />
-------------------------------------------------------------------- */

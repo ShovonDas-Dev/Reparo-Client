@@ -1,7 +1,8 @@
 import { getUsers, type User } from "@/lib/API/service";
 
-import UserStatCards from "./rootComponents/UserStatCards";
-import UsersTable from "./rootComponents/UsersTable";
+import UserStatCards from "./Components/UserStatCards";
+import UsersTable from "./Components/UsersTable";
+import ErrorFallback from "@/components/MyUI/ErrorFallback";
 
 export default async function AllUserDashBoard() {
   // Load the real users from the backend.
@@ -14,7 +15,8 @@ export default async function AllUserDashBoard() {
     error =
       err instanceof Error
         ? err.message
-        : "We could not load the users right now. Please try again later.";
+        : // todo: we use a specific components
+          "We could not load the users right now. Please try again later.";
   }
 
   return (
@@ -29,7 +31,10 @@ export default async function AllUserDashBoard() {
 
       {/* Friendly error message when the users cannot be loaded */}
       {error !== "" && (
-        <p className="py-10 text-center text-sm text-destructive">{error}</p>
+        <ErrorFallback
+          title={error}
+          message="We could not load the users right now. Please try again later."
+        />
       )}
 
       {/* The cards and the table only show when the users loaded */}

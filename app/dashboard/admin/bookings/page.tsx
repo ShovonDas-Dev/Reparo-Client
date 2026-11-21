@@ -1,7 +1,8 @@
 import { getAdminBookings, type Booking } from "@/lib/API/service";
 
-import BookingStatCards from "./rootComponents/BookingStatCards";
-import BookingsTable from "./rootComponents/BookingsTable";
+import BookingStatCards from "./Components/BookingStatCards";
+import BookingsTable from "./Components/BookingsTable";
+import ErrorFallback from "@/components/MyUI/ErrorFallback";
 
 export default async function AdminBookingsPage() {
   // Load every booking from the backend.
@@ -14,7 +15,8 @@ export default async function AdminBookingsPage() {
     error =
       err instanceof Error
         ? err.message
-        : "We could not load the bookings right now. Please try again later.";
+       
+        :  error = "We could not load the bookings right now. Please try again later.";
   }
 
   return (
@@ -29,7 +31,10 @@ export default async function AdminBookingsPage() {
 
       {/* Friendly error message when the bookings cannot be loaded */}
       {error !== "" && (
-        <p className="py-10 text-center text-sm text-destructive">{error}</p>
+        <ErrorFallback
+          title={error}
+          message="Something went wrong while loading Services."
+        />
       )}
 
       {/* The cards and the table only show when the bookings loaded */}

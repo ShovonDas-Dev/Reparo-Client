@@ -1,7 +1,8 @@
 import { getAdminPayments, type AdminPayment } from "@/lib/API/service";
 
-import TransactionStatCards from "./rootComponents/TransactionStatCards";
-import TransactionsTable from "./rootComponents/TransactionsTable";
+import TransactionStatCards from "./Components/TransactionStatCards";
+import TransactionsTable from "./Components/TransactionsTable";
+import ErrorFallback from "@/components/MyUI/ErrorFallback";
 
 export default async function AdminTransactionsPage() {
   // Load every payment record from the backend.
@@ -14,7 +15,8 @@ export default async function AdminTransactionsPage() {
     error =
       err instanceof Error
         ? err.message
-        : "We could not load the transactions right now. Please try again later.";
+        : // TODO: we use specific components
+          "We could not load the transactions right now. Please try again later.";
   }
 
   return (
@@ -29,7 +31,10 @@ export default async function AdminTransactionsPage() {
 
       {/* Friendly error message when the transactions cannot be loaded */}
       {error !== "" && (
-        <p className="py-10 text-center text-sm text-destructive">{error}</p>
+        <ErrorFallback
+          title={error}
+          message="We could not load the transactions right now. Please try again later."
+        />
       )}
 
       {/* The cards and the table only show when the payments loaded */}

@@ -1,7 +1,8 @@
 import { getAdminServices, type Service } from "@/lib/API/service";
 
-import ServiceStatCards from "./rootComponents/ServiceStatCards";
-import ServicesTable from "./rootComponents/ServicesTable";
+import ServiceStatCards from "./Components/ServiceStatCards";
+import ServicesTable from "./Components/ServicesTable";
+import ErrorFallback from "@/components/MyUI/ErrorFallback";
 
 export default async function AdminServicesPage() {
   // Load every service from the backend.
@@ -29,7 +30,10 @@ export default async function AdminServicesPage() {
 
       {/* Friendly error message when the services cannot be loaded */}
       {error !== "" && (
-        <p className="py-10 text-center text-sm text-destructive">{error}</p>
+        <ErrorFallback
+          title={error}
+          message="We could not load the services right now. Please try again later."
+        />
       )}
 
       {/* The cards and the table only show when the services loaded */}

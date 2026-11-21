@@ -4,7 +4,8 @@ import { ThemeProvider } from "@/components/ui/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { Navbar } from "@/components/Navbar/navbar";
 import "./globals.css";
-import ConditionalLayout from "@/components/services/ConditionalLayout";
+import ConditionalLayout from "@/components/MyUI/ConditionalLayout";
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
