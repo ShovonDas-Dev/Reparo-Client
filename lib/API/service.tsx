@@ -27,7 +27,10 @@ export type Booking = {
   category: string;
   image: string;
   technicianName: string;
+  // Optional fields only sent by the admin bookings endpoint.
+  technicianEmail?: string;
   customerName: string;
+  customerEmail?: string;
   preferredDate: string;
   address: string;
   phone: string;
@@ -35,6 +38,7 @@ export type Booking = {
   amount: number;
   status: "pending" | "confirmed" | "in_progress" | "completed" | "cancelled";
   paymentStatus: "unpaid" | "paid";
+  paidAt?: string;
   createdAt: string;
 };
 export type Payment = {
@@ -526,4 +530,68 @@ export const updateServiceApproval = async (
   }
 
   return data;
+};
+
+// GET /admin/bookings — every booking of every customer for the admin page.
+export const getAdminBookings = async (): Promise<Booking[]> => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/admin/bookings`
+  );
+
+  // Read the JSON body first.
+  const data: BookingsResponse = await res
+    .json()
+    .catch(() => ({ success: false }));
+
+  // Tell the caller when the request failed.
+  if (!res.ok) {
+    throw new Error(data.message || "Failed to load bookings.");
+  }
+
+  return data.data ?? [];
+};
+
+// One payment record shown on the admin transactions page.
+export type AdminPayment = {
+  _id: string;
+  bookingId: string;
+  customerId: string;
+  technicianId?: string;
+  serviceName: string;
+  customerName: string;
+  customerEmail: string;
+  technicianName: string;
+  technicianEmail: string;
+  amount: number;
+  currency: string;
+  method: string;
+  status: string;
+  transactionId: string;
+  paidAt: string;
+};
+
+// The answer shape of GET /admin/payments.
+type AdminPaymentsResponse = {
+  success: boolean;
+  message?: string;
+  data?: AdminPayment[];
+};
+
+// GET /admin/payments — every payment record for the admin page.
+export const getAdminPayments = async (): Promise<AdminPayment[]> => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/admin/payments`
+  );
+
+  // Read the JSON body first.
+  const data: AdminPaymentsResponse = await res
+    .json()
+    .catch(() => ({ success: false }));
+
+  // Tell the caller when the request failed.
+  if (!res.ok) {
+    throw new Error(data.message || "Failed to load transactions.");
+  }
+
+  return data.data ?? [];
 };
