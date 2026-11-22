@@ -10,6 +10,8 @@ const hideLayoutRoutes = [
   "/dashboard/admin",
   "/dashboard/customer",
   "/dashboard/technician",
+  "/sign-in",
+  "/sign-up"
 ];
 
 function LayoutGate({ children }: { children: ReactNode }) {

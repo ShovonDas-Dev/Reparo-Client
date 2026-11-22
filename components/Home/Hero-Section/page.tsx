@@ -80,14 +80,17 @@ export default function HeroSection() {
 
             <motion.h1
               variants={fadeUp}
-              className="mt-6 font-heading text-[2.4rem] font-bold leading-[1.1] tracking-[-0.03em] sm:text-5xl lg:text-6xl"
+              className="mt-6 font"
             >
               {/* Each line is a block so the three-line break holds everywhere */}
-              <span className="block">Your devices</span>
-              <span className="block">deserve better.</span>
+              <span className="block heading text-[2.4rem] font-bold leading-[1.1] tracking-[-0.03em] sm:text-5xl lg:text-6xl">Your devices</span>
+              <span className="block heading text-[2.4rem] font-bold leading-[1.1] tracking-[-0.03em] sm:text-5xl lg:text-6xl">deserve better.</span>
               <span className="block">
-                <span className="relative inline-block whitespace-nowrap">
-                  <span className="relative z-10 italic">Get them fixed.</span>
+                <span className="relative inline-block whitespace-nowrap heading text-[2.4rem]  leading-[1.1] tracking-[-0.03em] sm:text-5xl lg:text-6xl">
+                  <em className="font-stat font-normal italic text-[#687960] dark:text-[#a8cf5f]">
+                  More time being you.
+            </em>
+                  
                   <motion.span
                     aria-hidden
                     initial={{ scaleX: 0 }}

@@ -11,6 +11,7 @@ import {
 } from "@/lib/API/service";
 import { useSession } from "@/lib/auth-client";
 import { getClientToken } from "@/lib/getClientToken";
+import Spinner from "@/components/MyUI/Loading/Spinner";
 
 const formatDate = (value: string) => {
   if (!value) return "-";
@@ -126,9 +127,9 @@ export default function CustomerPaymentsPage() {
         </div>
 
         {showLoading && (
-          <p className="py-10 text-center text-sm text-muted-foreground">
-            Loading...
-          </p>
+          <div className="flex justify-center align-middle">
+                    <Spinner/>
+             </div>
         )}
 
         {!isPending && !customerId && (

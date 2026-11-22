@@ -14,6 +14,7 @@ import {
 } from "@/lib/API/service";
 import { useSession } from "@/lib/auth-client";
 import { getClientToken } from "@/lib/getClientToken";
+import Spinner from "@/components/MyUI/Loading/Spinner";
 
 // Every approval status has a short label and a colour.
 const APPROVAL_MAP: Record<
@@ -248,9 +249,9 @@ export default function TechnicianServicesPage() {
 
         {/* Loading, error and empty messages */}
         {showLoading && (
-          <p className="py-10 text-center text-sm text-muted-foreground">
-            Loading...
-          </p>
+          <div className="flex justify-center align-middle">
+                    <Spinner/>
+                  </div>
         )}
 
         {showSignIn && (

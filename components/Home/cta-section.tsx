@@ -54,7 +54,7 @@ export default function CtaSection({
         <motion.span
           aria-hidden
           animate={prefersReducedMotion ? {} : { rotate: 360 }}
-          transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
+          transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
           className="pointer-events-none absolute -top-[66px] right-[195px] text-[230px] leading-none text-[#25382a] max-[761px]:-top-[44px] max-[761px]:right-2 max-[761px]:text-[170px]"
         >
           ✳

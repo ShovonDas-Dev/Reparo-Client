@@ -1,3 +1,4 @@
+
 "use client"
 
 import Link from "next/link"
@@ -38,19 +39,25 @@ const SAY_HELLO = {
   ],
 }
 
-const columnClass = "flex flex-col items-start gap-[11px]"
-const linkClass =
-  "text-[10px] text-[#788178] transition-colors hover:text-[#354138] dark:text-[#9aa49b] dark:hover:text-[#eef2ea]"
+const columnClass = "flex flex-col items-start gap-[13px]"
 
-// Parent wrapper reveals the four footer columns one after another.
+const linkClass =
+  "text-[13px] leading-[1.6] text-[#788178] transition-colors hover:text-[#354138] dark:text-[#9aa49b] dark:hover:text-[#eef2ea]"
+
 const staggerContainer: Variants = {
   hidden: {},
-  visible: { transition: { staggerChildren: 0.08 } },
+  visible: {
+    transition: { staggerChildren: 0.08 },
+  },
 }
 
 const fadeUp: Variants = {
   hidden: { opacity: 0, y: 18 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5, ease: "easeOut" },
+  },
 }
 
 const viewport = { once: true, amount: 0.2 }
@@ -74,17 +81,18 @@ export default function Footer() {
             >
               <Link
                 href="/"
-                className="inline-flex items-center gap-2.5 text-[22px] tracking-[-1.2px] [font-weight:750]"
+                className="inline-flex items-center gap-2.5 text-[24px] tracking-[-1.2px] [font-weight:750]"
               >
                 <span className="grid size-[34px] place-items-center rounded-[11px] bg-[#c6f36a] text-[#18221e]">
                   <Wrench aria-hidden className="size-[19px]" />
                 </span>
                 <span>
-                  fixmate<span className="text-[#8fb545]">.</span>
+                  Reparo<span className="text-[#8fb545]">.</span>
                 </span>
               </Link>
             </motion.div>
-            <p className="my-[3px] text-[10px] leading-[1.7] text-[#808880] dark:text-[#9aa49b]">
+
+            <p className="my-[3px] text-[13px] leading-[1.7] text-[#808880] dark:text-[#9aa49b]">
               Good repairs. Good people.
               <br />
               A better way to get things working.
@@ -93,10 +101,21 @@ export default function Footer() {
 
           {/* Link columns */}
           {[EXPLORE, POPULAR_REPAIRS].map((column) => (
-            <motion.div key={column.title} variants={fadeUp} className={columnClass}>
-              <b className="mb-1 text-[10px]">{column.title}</b>
+            <motion.div
+              key={column.title}
+              variants={fadeUp}
+              className={columnClass}
+            >
+              <b className="mb-1 text-[14px] font-semibold">
+                {column.title}
+              </b>
+
               {column.links.map((link) => (
-                <Link key={link.label} href={link.href} className={linkClass}>
+                <Link
+                  key={link.label}
+                  href={link.href}
+                  className={linkClass}
+                >
                   {link.label}
                 </Link>
               ))}
@@ -105,26 +124,37 @@ export default function Footer() {
 
           {/* Contact column */}
           <motion.div variants={fadeUp} className={columnClass}>
-            <b className="mb-1 text-[10px]">{SAY_HELLO.title}</b>
+            <b className="mb-1 text-[14px] font-semibold">
+              {SAY_HELLO.title}
+            </b>
+
             <a
               href={`mailto:${SAY_HELLO.email}`}
               className={linkClass}
             >
               {SAY_HELLO.email}
             </a>
-            <span className="text-[10px] text-[#788178] dark:text-[#9aa49b]">
+
+            <span className="text-[13px] text-[#788178] dark:text-[#9aa49b]">
               {SAY_HELLO.hours}
             </span>
+
             <div className="flex gap-[13px]">
               {SAY_HELLO.social.map((item) => (
                 <motion.a
                   key={item.label}
                   href={item.href}
                   aria-label={item.label}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   whileHover={{ y: -3 }}
                   whileTap={{ scale: 0.9 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 20 }}
-                  className="text-[16px] text-[#3e4940] dark:text-[#dfe8d1]"
+                  transition={{
+                    type: "spring",
+                    stiffness: 400,
+                    damping: 20,
+                  }}
+                  className="text-[19px] text-[#3e4940] dark:text-[#dfe8d1]"
                 >
                   {item.glyph}
                 </motion.a>
@@ -133,14 +163,15 @@ export default function Footer() {
           </motion.div>
         </motion.div>
 
+        {/* Copyright */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={viewport}
           transition={{ duration: 0.5, ease: "easeOut" }}
-          className="mx-auto flex max-w-[1184px] justify-between border-t border-[#e6e9e3] pt-[17px] text-[9px] text-[#929990] dark:border-[#24302a] dark:text-[#7c857c] max-[761px]:flex-col max-[761px]:gap-2 max-[761px]:text-[8px]"
+          className="mx-auto flex max-w-[1184px] justify-between border-t border-[#e6e9e3] pt-[17px] text-[12px] text-[#929990] dark:border-[#24302a] dark:text-[#7c857c] max-[761px]:flex-col max-[761px]:gap-2 max-[761px]:text-[11px]"
         >
-          <span>© 2026 FixMate. Repair made simple.</span>
+          <span>© 2026 Reparo. Repair made simple.</span>
           <span>Demo experience · Sample listings and statistics</span>
         </motion.div>
       </footer>

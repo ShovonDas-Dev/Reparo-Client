@@ -20,6 +20,8 @@ import RecentBookings from "./rootComponents/RecentBookings";
 import RecentPayments from "./rootComponents/RecentPayments";
 import ServicesSummary from "./rootComponents/ServicesSummary";
 import StatCard from "./rootComponents/StatCard";
+import Spinner from "@/components/MyUI/Loading/Spinner";
+import { div } from "motion/react-client";
 
 // Pick the right greeting for the current local time.
 const getGreeting = () => {
@@ -161,9 +163,14 @@ export default function TechnicianOverviewPage() {
       </motion.div>
 
       {showLoading && (
-        <p className="py-10 text-center text-sm text-muted-foreground">
-          Loading...
-        </p>
+        <div className="flex justify-center align-middle">
+          <Spinner/>
+        </div>
+         
+
+        // <p className="py-10 text-center text-sm text-muted-foreground">
+        //   Loading...
+        // </p>
       )}
 
       {showSignIn && (

@@ -26,6 +26,7 @@ import {
   STATUS_MAP,
   formatDate,
 } from "../rootComponents/bookingDisplay";
+import Spinner from "@/components/MyUI/Loading/Spinner";
 
 // The choices of the "All statuses" dropdown.
 const filterOptions = [
@@ -238,9 +239,9 @@ export default function CustomerBookingsPage() {
 
         {/* Loading, error and empty messages */}
         {showLoading && (
-          <p className="py-10 text-center text-sm text-muted-foreground">
-            Loading...
-          </p>
+          <div className="flex justify-center align-middle">
+                    <Spinner/>
+                  </div>
         )}
 
         {showSignIn && (
