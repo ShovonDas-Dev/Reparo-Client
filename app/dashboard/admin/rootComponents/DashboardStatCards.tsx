@@ -1,3 +1,6 @@
+import * as motion from "framer-motion/client";
+import type { Variants } from "framer-motion";
+
 import type { AdminPayment, Booking, User } from "@/lib/API/service";
 
 // The six overview numbers at the top of the dashboard.
@@ -5,6 +8,19 @@ type DashboardStatCardsProps = {
   payments: AdminPayment[];
   bookings: Booking[];
   users: User[];
+};
+
+// The six cards appear one after another, left to right, top to bottom.
+// "framer-motion/client" works inside a server component, so this file
+// does not need "use client".
+const grid: Variants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.06 } },
+};
+
+const card: Variants = {
+  hidden: { opacity: 0, y: 10 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.3, ease: "easeOut" } },
 };
 
 export default function DashboardStatCards({
@@ -59,13 +75,22 @@ export default function DashboardStatCards({
   ];
 
   return (
-    <div className="mb-6 grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-      {statCards.map((card) => (
-        <div key={card.label} className="rounded-xl border border-border p-4">
-          <p className="text-sm text-muted-foreground">{card.label}</p>
-          <p className="mt-1 text-3xl font-bold">{card.value}</p>
-        </div>
+    <motion.div
+      variants={grid}
+      initial="hidden"
+      animate="show"
+      className="mb-6 grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+    >
+      {statCards.map((item) => (
+        <motion.div
+          key={item.label}
+          variants={card}
+          className="rounded-xl border border-border p-4"
+        >
+          <p className="text-sm text-muted-foreground">{item.label}</p>
+          <p className="mt-1 text-3xl font-bold">{item.value}</p>
+        </motion.div>
       ))}
-    </div>
+    </motion.div>
   );
 }

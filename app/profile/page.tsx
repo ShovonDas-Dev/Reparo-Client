@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { LogOut } from "lucide-react"
+import { AnimatePresence, MotionConfig, motion, type Variants } from "framer-motion"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -13,6 +14,24 @@ import { getProfile, type Profile } from "@/lib/API/profile"
 import ProfileCard from "@/components/Profile/ProfileCard"
 import EditProfileDialog from "@/components/Profile/EditProfileDialog"
 import ChangePasswordCard from "@/components/Profile/ChangePasswordCard"
+
+// One orchestrated reveal: the profile content staggers in once, after loading.
+const container: Variants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.08, delayChildren: 0.05 } },
+}
+
+const item: Variants = {
+  hidden: { opacity: 0, y: 12 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.35, ease: "easeOut" } },
+}
+
+// Skeleton / error / content swap with a quick crossfade.
+const fade: Variants = {
+  initial: { opacity: 0 },
+  animate: { opacity: 1, transition: { duration: 0.2 } },
+  exit: { opacity: 0, transition: { duration: 0.15 } },
+}
 
 // The profile page: loads the user, shows the card and handles the modals.
 export default function ProfilePage() {
@@ -100,69 +119,111 @@ export default function ProfilePage() {
   // Keep showing the skeleton while the page is loading or redirecting.
   const showSkeleton = loading || (!profile && !error)
 
+  // Which view is on screen. Used as the key so AnimatePresence can swap them.
+  const view = showSkeleton ? "skeleton" : error ? "error" : "content"
+
   return (
-    <main className="mx-auto w-full max-w-5xl px-5 py-12 md:px-8">
-      {/* Page title */}
-      <div className="mb-8">
-        <h1 className="font-heading text-3xl font-semibold tracking-tight">
-          My profile
-        </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Manage your personal details and account security.
-        </p>
-      </div>
-
-      {/* Loading skeleton */}
-      {showSkeleton && <ProfileSkeleton />}
-
-      {/* Error message with a retry button */}
-      {!showSkeleton && error && (
-        <div className="rounded-2xl border border-border bg-card p-8 text-center">
-          <p className="text-sm text-destructive">{error}</p>
-          <Button variant="outline" className="mt-4" onClick={handleRetry}>
-            Try again
-          </Button>
+    // reducedMotion="user" turns off movement for people who ask their OS for it.
+    <MotionConfig reducedMotion="user">
+      <main className="mx-auto w-full max-w-5xl px-5 py-12 md:px-8">
+        {/* Page title */}
+        <div className="mb-8">
+          <h1 className="font-heading text-3xl font-semibold tracking-tight">
+            My profile
+          </h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Manage your personal details and account security.
+          </p>
         </div>
-      )}
 
-      {/* The real profile content */}
-      {!showSkeleton && !error && profile && (
-        <div className="grid gap-6 lg:grid-cols-3">
-          <div className="lg:col-span-2">
-            <ProfileCard profile={profile} onEdit={() => setEditOpen(true)} />
-          </div>
-
-          <div className="space-y-6">
-            <ChangePasswordCard />
-
-            {/* Logout card */}
-            <section className="rounded-2xl border border-border bg-card p-6 sm:p-8">
-              <h2 className="font-heading text-lg font-semibold">Sign out</h2>
-              <p className="mt-1 text-sm text-muted-foreground">
-                End this session on this device.
-              </p>
-              <Button
-                variant="outline"
-                className="mt-4 w-full gap-2"
-                onClick={handleLogout}
-              >
-                <LogOut className="size-4" />
-                Logout
-              </Button>
-            </section>
-          </div>
-
-          {/* The edit modal is only mounted while it is open. */}
-          {editOpen && (
-            <EditProfileDialog
-              profile={profile}
-              onClose={() => setEditOpen(false)}
-              onSaved={refreshProfile}
-            />
+        <AnimatePresence mode="wait" initial={false}>
+          {/* Loading skeleton */}
+          {view === "skeleton" && (
+            <motion.div
+              key="skeleton"
+              variants={fade}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+            >
+              <ProfileSkeleton />
+            </motion.div>
           )}
-        </div>
-      )}
-    </main>
+
+          {/* Error message with a retry button */}
+          {view === "error" && (
+            <motion.div
+              key="error"
+              variants={fade}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              className="rounded-2xl border border-border bg-card p-8 text-center"
+            >
+              <p className="text-sm text-destructive">{error}</p>
+              <Button variant="outline" className="mt-4" onClick={handleRetry}>
+                Try again
+              </Button>
+            </motion.div>
+          )}
+
+          {/* The real profile content */}
+          {view === "content" && profile && (
+            <motion.div
+              key="content"
+              variants={container}
+              initial="hidden"
+              animate="show"
+              exit={{ opacity: 0, transition: { duration: 0.15 } }}
+              className="grid gap-6 lg:grid-cols-3"
+            >
+              <motion.div variants={item} className="lg:col-span-2">
+                <ProfileCard
+                  profile={profile}
+                  onEdit={() => setEditOpen(true)}
+                />
+              </motion.div>
+
+              <div className="space-y-6">
+                <motion.div variants={item}>
+                  <ChangePasswordCard />
+                </motion.div>
+
+                {/* Logout card */}
+                <motion.section
+                  variants={item}
+                  className="rounded-2xl border border-border bg-card p-6 sm:p-8"
+                >
+                  <h2 className="font-heading text-lg font-semibold">
+                    Sign out
+                  </h2>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    End this session on this device.
+                  </p>
+                  <Button
+                    variant="outline"
+                    className="mt-4 w-full gap-2"
+                    onClick={handleLogout}
+                  >
+                    <LogOut className="size-4" />
+                    Logout
+                  </Button>
+                </motion.section>
+              </div>
+
+              {/* The edit modal is only mounted while it is open. */}
+              {editOpen && (
+                <EditProfileDialog
+                  profile={profile}
+                  onClose={() => setEditOpen(false)}
+                  onSaved={refreshProfile}
+                />
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </main>
+    </MotionConfig>
   )
 }
 

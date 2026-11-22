@@ -1,4 +1,6 @@
 import Link from "next/link";
+import * as motion from "framer-motion/client";
+import type { Variants } from "framer-motion";
 import type { AdminPayment } from "@/lib/API/service";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/app/dashboard/customer/rootComponents/bookingDisplay";
@@ -6,6 +8,20 @@ import { formatDate } from "@/app/dashboard/customer/rootComponents/bookingDispl
 // The 5 newest payments on the dashboard.
 type RecentTransactionsProps = {
   payments: AdminPayment[];
+};
+
+// The rows fade in one after another once the panel itself appears.
+// There is no initial/animate here on purpose: the page's reveal wrapper
+// starts this, so the rows follow the panel instead of running on their own.
+// "framer-motion/client" works in a server component, so no "use client".
+const list: Variants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.05, delayChildren: 0.1 } },
+};
+
+const row: Variants = {
+  hidden: { opacity: 0, y: 8 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.25, ease: "easeOut" } },
 };
 
 export default function RecentTransactions({
@@ -47,10 +63,11 @@ export default function RecentTransactions({
 
       {/* One row per payment: service, customer, date and amount */}
       {recentPayments.length > 0 && (
-        <div className="divide-y divide-border">
+        <motion.div variants={list} className="divide-y divide-border">
           {recentPayments.map((payment) => (
-            <div
+            <motion.div
               key={payment._id}
+              variants={row}
               className="flex flex-col gap-1 p-4 sm:flex-row sm:items-center sm:justify-between"
             >
               <div className="min-w-0">
@@ -63,9 +80,9 @@ export default function RecentTransactions({
               <span className="text-sm font-medium">
                 ৳{payment.amount.toLocaleString()}
               </span>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       )}
     </div>
   );
