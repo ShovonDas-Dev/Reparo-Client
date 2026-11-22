@@ -1,9 +1,22 @@
+import * as motion from "framer-motion/client";
+import type { Variants } from "framer-motion";
 import { getAdminServices, type Service } from "@/lib/API/service";
 import { getServerToken } from "@/lib/serverToken";
 
 import ServiceStatCards from "./Components/ServiceStatCards";
 import ServicesTable from "./Components/ServicesTable";
 import ErrorFallback from "@/components/MyUI/ErrorFallback";
+
+// The page reveal starts the cards and the table rows.
+const page: Variants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.07, delayChildren: 0.05 } },
+};
+
+const item: Variants = {
+  hidden: { opacity: 0, y: 12 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.3, ease: "easeOut" } },
+};
 
 export default async function AdminServicesPage() {
   // Load every service from the backend.
@@ -22,14 +35,19 @@ export default async function AdminServicesPage() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-6xl">
+    <motion.div
+      variants={page}
+      initial="hidden"
+      animate="show"
+      className="mx-auto w-full max-w-6xl"
+    >
       {/* Page title */}
-      <div className="mb-6">
+      <motion.div variants={item} className="mb-6">
         <h1 className="text-2xl font-bold tracking-tight">Services</h1>
         <p className="text-sm text-muted-foreground">
           Every service on Reparo, with a quick way to approve or reject them.
         </p>
-      </div>
+      </motion.div>
 
       {/* Friendly error message when the services cannot be loaded */}
       {error !== "" && (
@@ -47,6 +65,6 @@ export default async function AdminServicesPage() {
           <ServicesTable services={services} />
         </>
       )}
-    </div>
+    </motion.div>
   );
 }

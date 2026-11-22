@@ -1,8 +1,21 @@
+import * as motion from "framer-motion/client";
+import type { Variants } from "framer-motion";
 import type { Booking } from "@/lib/API/service";
 
 // How many bookings sit in each of the four main statuses.
 type BookingStatusSummaryProps = {
   bookings: Booking[];
+};
+
+// The four status cards follow the page reveal with their own stagger.
+const list: Variants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.05, delayChildren: 0.05 } },
+};
+
+const cardVariants: Variants = {
+  hidden: { opacity: 0, y: 8 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.25, ease: "easeOut" } },
 };
 
 // The four statuses in the order we want to show them.
@@ -27,7 +40,10 @@ export default function BookingStatusSummary({
       </div>
 
       {/* Four simple number cards, one per status */}
-      <div className="grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-4">
+      <motion.div
+        variants={list}
+        className="grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-4"
+      >
         {statusCards.map((card) => {
           // Count the bookings that have this status.
           const count = bookings.filter(
@@ -35,13 +51,17 @@ export default function BookingStatusSummary({
           ).length;
 
           return (
-            <div key={card.status} className="rounded-lg border border-border p-3">
+            <motion.div
+              key={card.status}
+              variants={cardVariants}
+              className="rounded-lg border border-border p-3"
+            >
               <p className="text-sm text-muted-foreground">{card.label}</p>
               <p className="mt-1 text-3xl font-bold">{count}</p>
-            </div>
+            </motion.div>
           );
         })}
-      </div>
+      </motion.div>
     </div>
   );
 }

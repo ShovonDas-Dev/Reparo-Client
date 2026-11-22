@@ -1,9 +1,17 @@
 import Link from "next/link";
+import * as motion from "framer-motion/client";
+import type { Variants } from "framer-motion";
 import { Button } from "@/components/ui/button";
 
 // Shows a warning when new repair requests are waiting.
 type NewRequestsBannerProps = {
   count: number;
+};
+
+// Follows the parent page reveal without starting its own.
+const banner: Variants = {
+  hidden: { opacity: 0, y: 10 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.3, ease: "easeOut" } },
 };
 
 export default function NewRequestsBanner({ count }: NewRequestsBannerProps) {
@@ -16,7 +24,7 @@ export default function NewRequestsBanner({ count }: NewRequestsBannerProps) {
   const requestWord = count === 1 ? "request" : "requests";
 
   return (
-    <div className="mb-6 flex flex-col gap-3 rounded-xl border border-amber-300 bg-amber-50 p-4 sm:flex-row sm:items-center sm:justify-between">
+    <motion.div variants={banner} className="mb-6 flex flex-col gap-3 rounded-xl border border-amber-300 bg-amber-50 p-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <p className="font-semibold text-amber-800">
           You have {count} new {requestWord}
@@ -29,6 +37,6 @@ export default function NewRequestsBanner({ count }: NewRequestsBannerProps) {
       <Button render={<Link href="/dashboard/technician/requests" />}>
         View requests
       </Button>
-    </div>
+    </motion.div>
   );
 }

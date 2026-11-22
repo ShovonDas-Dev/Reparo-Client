@@ -1,3 +1,5 @@
+import * as motion from "framer-motion/client"
+
 // Small banner used to show form feedback (error / success / info).
 export function FormMessage({
   type,
@@ -13,11 +15,14 @@ export function FormMessage({
   }[type]
 
   return (
-    <div
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.2 }}
       role={type === "error" ? "alert" : "status"}
       className={`rounded-md border px-3 py-2.5 text-xs leading-relaxed ${styles}`}
     >
       {children}
-    </div>
+    </motion.div>
   )
 }

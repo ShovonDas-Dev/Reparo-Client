@@ -1,4 +1,6 @@
 import Link from "next/link";
+import * as motion from "framer-motion/client";
+import type { Variants } from "framer-motion";
 import type { Booking } from "@/lib/API/service";
 import { Button } from "@/components/ui/button";
 
@@ -7,6 +9,17 @@ import { STATUS_MAP, formatDate } from "./bookingDisplay";
 // Shows the latest 5 bookings of the customer.
 type RecentBookingsProps = {
   bookings: Booking[];
+};
+
+// Rows follow the page reveal with a small stagger of their own.
+const list: Variants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.05, delayChildren: 0.05 } },
+};
+
+const row: Variants = {
+  hidden: { opacity: 0, y: 8 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.25, ease: "easeOut" } },
 };
 
 export default function RecentBookings({ bookings }: RecentBookingsProps) {
@@ -45,10 +58,11 @@ export default function RecentBookings({ bookings }: RecentBookingsProps) {
       )}
 
       {recentBookings.length > 0 && (
-        <div className="divide-y divide-border">
+        <motion.div variants={list} className="divide-y divide-border">
           {recentBookings.map((booking) => (
-            <div
+            <motion.div
               key={booking._id}
+              variants={row}
               className="flex flex-col gap-2 p-4 sm:flex-row sm:items-center sm:justify-between"
             >
               <div className="min-w-0">
@@ -72,9 +86,9 @@ export default function RecentBookings({ bookings }: RecentBookingsProps) {
                   {booking.paymentStatus === "paid" ? "Paid" : "Unpaid"}
                 </span>
               </div>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       )}
     </div>
   );

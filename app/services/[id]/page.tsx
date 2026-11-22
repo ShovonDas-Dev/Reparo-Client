@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { motion, type Variants } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -20,6 +21,17 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import RepairReqBtn from "@/components/services/DetailsPage/RepairReqBtn";
 import { useSession } from "@/lib/auth-client";
+
+// One orchestrated reveal for the whole details page.
+const page: Variants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.07, delayChildren: 0.05 } },
+};
+
+const item: Variants = {
+  hidden: { opacity: 0, y: 12 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.3, ease: "easeOut" } },
+};
 
 const ServiceDetailsPage = () => {
   const params = useParams();
@@ -74,9 +86,17 @@ const ServiceDetailsPage = () => {
   const showImage = Boolean(service.image) && !imageFailed;
 
   return (
-    <main className="mx-auto w-full max-w-6xl px-5 py-10 md:px-8">
+    <motion.main
+      variants={page}
+      initial="hidden"
+      animate="show"
+      className="mx-auto w-full max-w-6xl px-5 py-10 md:px-8"
+    >
       {/* Breadcrumbs */}
-      <nav className="flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground">
+      <motion.nav
+        variants={item}
+        className="flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground"
+      >
         <Link href="/services" className="hover:text-foreground hover:underline">
           Services
         </Link>
@@ -84,11 +104,11 @@ const ServiceDetailsPage = () => {
         <span>{service.category}</span>
         <span aria-hidden>/</span>
         <span className="text-foreground">{service.title}</span>
-      </nav>
+      </motion.nav>
 
       <div className="mt-6 grid gap-8 lg:grid-cols-[1fr_340px] lg:gap-10">
         {/* ---------- Main content ---------- */}
-        <div>
+        <motion.div variants={item}>
           {/* Service image */}
           <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl border border-border bg-muted sm:aspect-[16/10]">
             {showImage ? (
@@ -169,10 +189,13 @@ const ServiceDetailsPage = () => {
               </li>
             </ul>
           </section>
-        </div>
+        </motion.div>
 
         {/* ---------- Booking card ---------- */}
-        <aside className="lg:sticky lg:top-24 lg:self-start">
+        <motion.aside
+          variants={item}
+          className="lg:sticky lg:top-24 lg:self-start"
+        >
           <div className="rounded-2xl border border-border bg-card p-5 md:p-6">
             <p className="text-xs font-semibold tracking-[0.2em] uppercase text-muted-foreground">
               Service overview
@@ -247,9 +270,9 @@ const ServiceDetailsPage = () => {
               </Link>
             </p>
           </div>
-        </aside>
+        </motion.aside>
       </div>
-    </main>
+    </motion.main>
   );
 };
 
@@ -258,7 +281,12 @@ const ServiceDetailsPage = () => {
 // so nothing jumps around when the data arrives.
 function ServiceDetailsSkeleton() {
   return (
-    <main className="mx-auto w-full max-w-6xl px-5 py-10 md:px-8">
+    <motion.main
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.2 }}
+      className="mx-auto w-full max-w-6xl px-5 py-10 md:px-8"
+    >
       <Skeleton className="h-4 w-56" />
 
       <div className="mt-6 grid gap-8 lg:grid-cols-[1fr_340px] lg:gap-10">
@@ -311,7 +339,7 @@ function ServiceDetailsSkeleton() {
           </div>
         </aside>
       </div>
-    </main>
+    </motion.main>
   );
 }
 

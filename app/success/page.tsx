@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { CheckCircle2, XCircle } from "lucide-react";
@@ -114,7 +115,12 @@ function SuccessContent() {
   }
 
   return (
-    <div className="text-center">
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
+      className="text-center"
+    >
       <CheckCircle2
         aria-hidden
         className="mx-auto size-12 text-green-500"
@@ -134,7 +140,7 @@ function SuccessContent() {
       >
         Back to bookings
       </Button>
-    </div>
+    </motion.div>
   );
 }
 

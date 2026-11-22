@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, useEffect, useState } from "react";
+import { motion, type Variants } from "framer-motion";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
@@ -14,6 +15,17 @@ import {
 } from "@/lib/API/service";
 import { useSession } from "@/lib/auth-client";
 import { getClientToken } from "@/lib/getClientToken";
+
+// The two checkout columns reveal one after the other.
+const page: Variants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.07, delayChildren: 0.05 } },
+};
+
+const item: Variants = {
+  hidden: { opacity: 0, y: 12 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.3, ease: "easeOut" } },
+};
 
 function CheckoutContent() {
   const searchParams = useSearchParams();
@@ -132,8 +144,16 @@ function CheckoutContent() {
   const amount = booking.amount.toLocaleString("en-US");
 
   return (
-    <div className="grid min-h-screen lg:grid-cols-2">
-      <section className="bg-slate-50 px-6 py-10 text-slate-900 dark:bg-muted/30 dark:text-foreground lg:px-12 lg:py-16">
+    <motion.div
+      variants={page}
+      initial="hidden"
+      animate="show"
+      className="grid min-h-screen lg:grid-cols-2"
+    >
+      <motion.section
+        variants={item}
+        className="bg-slate-50 px-6 py-10 text-slate-900 dark:bg-muted/30 dark:text-foreground lg:px-12 lg:py-16"
+      >
         <div className="mx-auto w-full max-w-md">
           <Link
             href="/dashboard/customer/bookings"
@@ -187,9 +207,12 @@ function CheckoutContent() {
             charged.
           </p>
         </div>
-      </section>
+      </motion.section>
 
-      <section className="flex items-center bg-background px-6 py-10 lg:px-12 lg:py-16">
+      <motion.section
+        variants={item}
+        className="flex items-center bg-background px-6 py-10 lg:px-12 lg:py-16"
+      >
         <div className="mx-auto w-full max-w-md">
           <h2 className="font-heading text-xl font-semibold">Pay with card</h2>
 
@@ -274,8 +297,8 @@ function CheckoutContent() {
             Powered by Stripe (simulated)
           </p>
         </div>
-      </section>
-    </div>
+      </motion.section>
+    </motion.div>
   );
 }
 

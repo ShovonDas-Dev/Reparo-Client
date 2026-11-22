@@ -1,3 +1,5 @@
+import * as motion from "framer-motion/client";
+import type { Variants } from "framer-motion";
 import {
   getAdminBookings,
   getAdminPayments,
@@ -19,6 +21,17 @@ import RecentBookings from "./rootComponents/RecentBookings";
 import RecentTransactions from "./rootComponents/RecentTransactions";
 
 // The admin overview page. It only loads data and puts the panels on screen.
+// The page reveal starts the variant-driven panels (rows and cards).
+const page: Variants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.07, delayChildren: 0.05 } },
+};
+
+const item: Variants = {
+  hidden: { opacity: 0, y: 12 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.3, ease: "easeOut" } },
+};
+
 export default async function AdminDashboardPage() {
   // The real data from the backend. Everything starts empty.
   let payments: AdminPayment[] = [];
@@ -53,14 +66,19 @@ export default async function AdminDashboardPage() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-6xl">
+    <motion.div
+      variants={page}
+      initial="hidden"
+      animate="show"
+      className="mx-auto w-full max-w-6xl"
+    >
       {/* Page title */}
-      <div className="mb-6">
+      <motion.div variants={item} className="mb-6">
         <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
         <p className="text-sm text-muted-foreground">
           Overview of your platform
         </p>
-      </div>
+      </motion.div>
 
       {/* Friendly error message when the dashboard cannot be loaded */}
       {error !== "" && (
@@ -81,21 +99,29 @@ export default async function AdminDashboardPage() {
           />
 
           {/* The two lists, side by side on big screens */}
-          <div className="mb-6 grid gap-6 lg:grid-cols-2">
+          <motion.div
+            variants={item}
+            className="mb-6 grid gap-6 lg:grid-cols-2"
+          >
             <RecentTransactions payments={payments} />
             <RecentBookings bookings={bookings} />
-          </div>
+          </motion.div>
 
           {/* Things that need the admin, and the booking counts */}
-          <div className="mb-6 grid gap-6 lg:grid-cols-2">
+          <motion.div
+            variants={item}
+            className="mb-6 grid gap-6 lg:grid-cols-2"
+          >
             <PendingActions bookings={bookings} services={services} />
             <BookingStatusSummary bookings={bookings} />
-          </div>
+          </motion.div>
 
           {/* Short cuts to the other admin pages */}
-          <QuickLinks />
+          <motion.div variants={item}>
+            <QuickLinks />
+          </motion.div>
         </>
       )}
-    </div>
+    </motion.div>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { motion, type Variants } from "framer-motion";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -47,6 +48,17 @@ const formatDate = (value: string) => {
     year: "numeric",
     timeZone: "UTC",
   });
+};
+
+// One staggered reveal for the page and its table rows.
+const container: Variants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.06, delayChildren: 0.05 } },
+};
+
+const item: Variants = {
+  hidden: { opacity: 0, y: 10 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.28, ease: "easeOut" } },
 };
 
 export default function TechnicianRequests() {
@@ -125,17 +137,22 @@ export default function TechnicianRequests() {
     !showLoading && !showSignIn && !showError && bookings.length > 0;
 
   return (
-    <div className="mx-auto w-full max-w-6xl">
+    <motion.div
+      variants={container}
+      initial="hidden"
+      animate="show"
+      className="mx-auto w-full max-w-6xl"
+    >
       {/* Page title */}
-      <div className="mb-6">
+      <motion.div variants={item} className="mb-6">
         <h1 className="text-2xl font-bold tracking-tight">Repair requests</h1>
         <p className="text-sm text-muted-foreground">
           Accept a request and update it while you work.
         </p>
-      </div>
+      </motion.div>
 
       {/* Bookings panel */}
-      <div className="rounded-xl border border-border">
+      <motion.div variants={item} className="rounded-xl border border-border">
         <div className="border-b border-border p-4">
           <h2 className="text-lg font-semibold">Bookings</h2>
           <p className="text-sm text-muted-foreground">
@@ -180,12 +197,16 @@ export default function TechnicianRequests() {
                   <th className="px-4 py-3 font-medium">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border">
+              <motion.tbody variants={container} className="divide-y divide-border">
                 {bookings.map((booking) => {
                   const step = nextStep(booking);
 
                   return (
-                    <tr key={booking._id} className="hover:bg-muted/40">
+                    <motion.tr
+                      key={booking._id}
+                      variants={item}
+                      className="hover:bg-muted/40"
+                    >
                       {/* Service name */}
                       <td className="px-4 py-3 font-medium">
                         {booking.serviceName}
@@ -222,14 +243,14 @@ export default function TechnicianRequests() {
                           </Button>
                         )}
                       </td>
-                    </tr>
+                    </motion.tr>
                   );
                 })}
-              </tbody>
+              </motion.tbody>
             </table>
           </div>
         )}
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

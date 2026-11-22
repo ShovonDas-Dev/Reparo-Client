@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useState, type ChangeEvent } from "react";
+import { motion, type Variants } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { Booking } from "@/lib/API/service";
@@ -14,6 +15,17 @@ import BookingDetailsDialog from "./BookingDetailsDialog";
 
 // How many bookings are shown on one page.
 const BOOKINGS_PER_PAGE = 10;
+
+// Rows follow the page reveal with their own stagger.
+const list: Variants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.04, delayChildren: 0.05 } },
+};
+
+const row: Variants = {
+  hidden: { opacity: 0, y: 8 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.25, ease: "easeOut" } },
+};
 
 // The client part of the page: search, filters, table and pagination.
 type BookingsTableProps = {
@@ -165,9 +177,13 @@ export default function BookingsTable({ bookings }: BookingsTableProps) {
                 <th className="px-4 py-3 font-medium">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border">
+            <motion.tbody variants={list} className="divide-y divide-border">
               {visibleBookings.map((booking) => (
-                <tr key={booking._id} className="hover:bg-muted/40">
+                <motion.tr
+                  key={booking._id}
+                  variants={row}
+                  className="hover:bg-muted/40"
+                >
                   {/* Small image, name and category */}
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
@@ -254,9 +270,9 @@ export default function BookingsTable({ bookings }: BookingsTableProps) {
                       View details
                     </Button>
                   </td>
-                </tr>
+                </motion.tr>
               ))}
-            </tbody>
+            </motion.tbody>
           </table>
         </div>
       )}

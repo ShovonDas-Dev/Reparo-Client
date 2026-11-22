@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { motion, type Variants } from "framer-motion";
 import { toast } from "sonner";
 import {
   getCustomerBookings,
@@ -20,6 +21,17 @@ const formatDate = (value: string) => {
     month: "short",
     year: "numeric",
   });
+};
+
+// One staggered reveal for the page, its cards and its table rows.
+const container: Variants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.06, delayChildren: 0.05 } },
+};
+
+const item: Variants = {
+  hidden: { opacity: 0, y: 10 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.28, ease: "easeOut" } },
 };
 
 export default function CustomerPaymentsPage() {
@@ -79,28 +91,33 @@ export default function CustomerPaymentsPage() {
   const showLoading = isPending || (loading && Boolean(customerId));
 
   return (
-    <div className="mx-auto w-full max-w-6xl">
-      <div className="mb-6">
+    <motion.div
+      variants={container}
+      initial="hidden"
+      animate="show"
+      className="mx-auto w-full max-w-6xl"
+    >
+      <motion.div variants={item} className="mb-6">
         <h1 className="text-2xl font-bold tracking-tight">My payments</h1>
         <p className="text-sm text-muted-foreground">
           Every payment you made for a completed repair.
         </p>
-      </div>
+      </motion.div>
 
-      <div className="mb-6 grid gap-4 sm:grid-cols-2">
-        <div className="rounded-xl border border-border p-4">
+      <motion.div variants={container} className="mb-6 grid gap-4 sm:grid-cols-2">
+        <motion.div variants={item} className="rounded-xl border border-border p-4">
           <p className="text-sm text-muted-foreground">Total paid</p>
           <p className="mt-1 text-3xl font-bold">
             ৳{totalPaid.toLocaleString("en-US")}
           </p>
-        </div>
-        <div className="rounded-xl border border-border p-4">
+        </motion.div>
+        <motion.div variants={item} className="rounded-xl border border-border p-4">
           <p className="text-sm text-muted-foreground">Payments</p>
           <p className="mt-1 text-3xl font-bold">{payments.length}</p>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
 
-      <div className="rounded-xl border border-border">
+      <motion.div variants={item} className="rounded-xl border border-border">
         <div className="border-b border-border p-4">
           <h2 className="text-lg font-semibold">Payment history</h2>
           <p className="text-sm text-muted-foreground">
@@ -150,9 +167,13 @@ export default function CustomerPaymentsPage() {
                     <th className="px-4 py-3 font-medium">Status</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-border">
+                <motion.tbody variants={container} className="divide-y divide-border">
                   {payments.map((payment) => (
-                    <tr key={payment._id} className="hover:bg-muted/40">
+                    <motion.tr
+                      key={payment._id}
+                      variants={item}
+                      className="hover:bg-muted/40"
+                    >
                       <td className="px-4 py-3">
                         {formatDate(payment.paidAt)}
                       </td>
@@ -168,13 +189,13 @@ export default function CustomerPaymentsPage() {
                           Paid
                         </span>
                       </td>
-                    </tr>
+                    </motion.tr>
                   ))}
-                </tbody>
+                </motion.tbody>
               </table>
             </div>
           )}
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

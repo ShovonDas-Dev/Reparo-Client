@@ -2,6 +2,8 @@
 
 import ServiceForm from "@/components/Technician/ServiceForm";
 
+import { motion } from "framer-motion";
+
 import { toast } from "sonner";
 
 
@@ -66,7 +68,12 @@ export default  function  AddServicePage () {
 };
 
   return (
-    <div className="mx-auto w-full max-w-4xl">
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
+      className="mx-auto w-full max-w-4xl"
+    >
   <h1 className="mb-1 text-2xl font-bold text-foreground">
     Add a Service
   </h1>
@@ -80,7 +87,7 @@ export default  function  AddServicePage () {
     onSubmit={handleAdd}
     submitLabel="Add Service"
   />
-</div>
+</motion.div>
   );
 }
 

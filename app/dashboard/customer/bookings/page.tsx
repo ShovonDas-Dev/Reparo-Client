@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { motion, type Variants } from "framer-motion";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -34,6 +35,17 @@ const filterOptions = [
     label: info.label,
   })),
 ];
+
+// One staggered reveal for the page, its cards and its table rows.
+const container: Variants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.06, delayChildren: 0.05 } },
+};
+
+const item: Variants = {
+  hidden: { opacity: 0, y: 10 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.28, ease: "easeOut" } },
+};
 
 export default function CustomerBookingsPage() {
   const { data: session, isPending } = useSession();
@@ -170,28 +182,37 @@ export default function CustomerBookingsPage() {
     : [];
 
   return (
-    <div className="mx-auto w-full max-w-6xl">
+    <motion.div
+      variants={container}
+      initial="hidden"
+      animate="show"
+      className="mx-auto w-full max-w-6xl"
+    >
       {/* Page title */}
-      <div className="mb-6">
+      <motion.div variants={item} className="mb-6">
         <h1 className="text-2xl font-bold tracking-tight">My bookings</h1>
         <p className="text-sm text-muted-foreground">
           Keep track of your repair requests in one place.
         </p>
-      </div>
+      </motion.div>
 
       {/* The 3 cards are counted from the list */}
-      <div className="mb-6 grid gap-4 sm:grid-cols-3">
+      <motion.div variants={container} className="mb-6 grid gap-4 sm:grid-cols-3">
         {statCards.map((card) => (
-          <div key={card.label} className="rounded-xl border border-border p-4">
+          <motion.div
+            key={card.label}
+            variants={item}
+            className="rounded-xl border border-border p-4"
+          >
             <p className="text-sm text-muted-foreground">{card.label}</p>
             <p className="mt-1 text-3xl font-bold">{card.value}</p>
             <p className="text-xs text-muted-foreground">{card.hint}</p>
-          </div>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
 
       {/* Bookings panel */}
-      <div className="rounded-xl border border-border">
+      <motion.div variants={item} className="rounded-xl border border-border">
         {/* Panel header with the status filter */}
         <div className="flex flex-col gap-3 border-b border-border p-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -258,9 +279,13 @@ export default function CustomerBookingsPage() {
                   <th className="px-4 py-3 font-medium">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border">
+              <motion.tbody variants={container} className="divide-y divide-border">
                 {visibleBookings.map((booking) => (
-                  <tr key={booking._id} className="hover:bg-muted/40">
+                  <motion.tr
+                    key={booking._id}
+                    variants={item}
+                    className="hover:bg-muted/40"
+                  >
                     {/* Service name with a small picture */}
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
@@ -342,13 +367,13 @@ export default function CustomerBookingsPage() {
                         </Button>
                       </div>
                     </td>
-                  </tr>
+                  </motion.tr>
                 ))}
-              </tbody>
+              </motion.tbody>
             </table>
           </div>
         )}
-      </div>
+      </motion.div>
 
       {/* Details modal with all the info of one booking */}
       {selected && (
@@ -380,6 +405,6 @@ export default function CustomerBookingsPage() {
           </DialogContent>
         </Dialog>
       )}
-    </div>
+    </motion.div>
   );
 }

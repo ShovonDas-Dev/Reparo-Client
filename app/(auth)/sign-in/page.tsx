@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
+import { motion, type Variants } from "framer-motion"
 import { Loader2 } from "lucide-react"
 import { buttonVariants } from "@/components/Navbar/button"
 import { cn } from "@/lib/utils"
@@ -12,6 +13,17 @@ import { FormMessage } from "../_components/form-message"
 import { inputClass, labelClass, fieldErrorClass } from "../_components/form-styles"
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+// The form content appears as one short staggered sequence.
+const container: Variants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.07, delayChildren: 0.05 } },
+}
+
+const item: Variants = {
+  hidden: { opacity: 0, y: 10 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.3, ease: "easeOut" } },
+}
 
 export default function SignInPage() {
   const router = useRouter()
@@ -75,13 +87,13 @@ export default function SignInPage() {
   }
 
   return (
-    <div>
-      <h1 className="text-2xl font-semibold tracking-tight">Welcome back</h1>
-      <p className="mt-1.5 text-sm text-muted-foreground">
+    <motion.div variants={container} initial="hidden" animate="show">
+      <motion.h1 variants={item} className="text-2xl font-semibold tracking-tight">Welcome back</motion.h1>
+      <motion.p variants={item} className="mt-1.5 text-sm text-muted-foreground">
         Sign in to your Reparo account.
-      </p>
+      </motion.p>
 
-      <form onSubmit={handleSubmit} noValidate className="mt-8 space-y-4">
+      <motion.form variants={item} onSubmit={handleSubmit} noValidate className="mt-8 space-y-4">
         {serverError && <FormMessage type="error">{serverError}</FormMessage>}
         {info && <FormMessage type="info">{info}</FormMessage>}
         {success && <FormMessage type="success">{success}</FormMessage>}
@@ -154,9 +166,9 @@ export default function SignInPage() {
             "Sign in"
           )}
         </button>
-      </form>
+      </motion.form>
 
-      <p className="mt-6 text-center text-sm text-muted-foreground">
+      <motion.p variants={item} className="mt-6 text-center text-sm text-muted-foreground">
         Don&apos;t have an account?{" "}
         <Link
           href="/sign-up"
@@ -164,7 +176,7 @@ export default function SignInPage() {
         >
           Create one
         </Link>
-      </p>
-    </div>
+      </motion.p>
+    </motion.div>
   )
 }

@@ -1,3 +1,5 @@
+import * as motion from "framer-motion/client";
+import type { Variants } from "framer-motion";
 import type { Booking } from "@/lib/API/service";
 
 import { STATUS_MAP } from "./bookingDisplay";
@@ -5,6 +7,17 @@ import { STATUS_MAP } from "./bookingDisplay";
 // Shows how many bookings are in each of the 5 statuses.
 type StatusSummaryProps = {
   bookings: Booking[];
+};
+
+// The five status cards follow the page reveal with their own stagger.
+const list: Variants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.05, delayChildren: 0.05 } },
+};
+
+const card: Variants = {
+  hidden: { opacity: 0, y: 8 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.25, ease: "easeOut" } },
 };
 
 // The 5 statuses in the order we want to show them.
@@ -26,7 +39,10 @@ export default function StatusSummary({ bookings }: StatusSummaryProps) {
         </p>
       </div>
 
-      <div className="grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-5">
+      <motion.div
+        variants={list}
+        className="grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-5"
+      >
         {STATUSES.map((status) => {
           // Count the bookings that have this status.
           const count = bookings.filter(
@@ -34,8 +50,9 @@ export default function StatusSummary({ bookings }: StatusSummaryProps) {
           ).length;
 
           return (
-            <div
+            <motion.div
               key={status}
+              variants={card}
               className="rounded-lg border border-border p-3"
             >
               <span
@@ -44,10 +61,10 @@ export default function StatusSummary({ bookings }: StatusSummaryProps) {
                 {STATUS_MAP[status].label}
               </span>
               <p className="mt-2 text-2xl font-bold">{count}</p>
-            </div>
+            </motion.div>
           );
         })}
-      </div>
+      </motion.div>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type ChangeEvent } from "react";
+import { motion, type Variants } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { AdminPayment } from "@/lib/API/service";
@@ -10,6 +11,17 @@ import TransactionDetailsDialog from "./TransactionDetailsDialog";
 
 // How many transactions are shown on one page.
 const TRANSACTIONS_PER_PAGE = 10;
+
+// Rows follow the page reveal with their own stagger.
+const list: Variants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.04, delayChildren: 0.05 } },
+};
+
+const row: Variants = {
+  hidden: { opacity: 0, y: 8 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.25, ease: "easeOut" } },
+};
 
 // The client part of the page: search, table and pagination.
 type TransactionsTableProps = {
@@ -111,10 +123,11 @@ export default function TransactionsTable({ payments }: TransactionsTableProps) 
                 <th className="px-4 py-3 font-medium">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border">
+            <motion.tbody variants={list} className="divide-y divide-border">
               {visiblePayments.map((payment) => (
-                <tr
+                <motion.tr
                   key={payment._id}
+                  variants={row}
                   onClick={() => setSelectedPayment(payment)}
                   className="cursor-pointer hover:bg-muted/40"
                 >
@@ -169,9 +182,9 @@ export default function TransactionsTable({ payments }: TransactionsTableProps) 
                         : "-"}
                     </span>
                   </td>
-                </tr>
+                </motion.tr>
               ))}
-            </tbody>
+            </motion.tbody>
           </table>
         </div>
       )}

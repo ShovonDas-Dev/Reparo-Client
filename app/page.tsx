@@ -1,3 +1,4 @@
+import * as motion from "framer-motion/client";
 import CtaSection from "@/components/Home/cta-section";
 import Footer from "@/components/Footer/footer";
 import HeroSection from "@/components/Home/Hero-Section/page";
@@ -10,7 +11,12 @@ import FeaturedService from "@/components/Home/FeaturedService";
 export default function Home() {
   return (
     <>
-      <main>
+      {/* Single page entrance; each section already animates its own content. */}
+      <motion.main
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
+      >
         <HeroSection/>
         <ServiceCaregorise/>
         <FeaturedService/>
@@ -18,7 +24,7 @@ export default function Home() {
         <PromiseSection/>
         <TestimonialsSection/>
         <CtaSection/>
-      </main>
+      </motion.main>
       {/* <Footer/> */}
     </>
   );

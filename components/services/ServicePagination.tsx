@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -17,7 +18,10 @@ export function ServicePagination({
   if (totalPages <= 1) return null;
 
   return (
-    <nav
+    <motion.nav
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.25 }}
       aria-label="Services pagination"
       className="mt-8 flex flex-wrap items-center justify-between gap-4"
     >
@@ -45,6 +49,6 @@ export function ServicePagination({
         Next
         <ChevronRight aria-hidden />
       </Button>
-    </nav>
+    </motion.nav>
   );
 }

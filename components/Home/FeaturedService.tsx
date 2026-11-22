@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import Link from "next/link";
+import * as motion from "framer-motion/client";
 import { ArrowRight } from "lucide-react";
 import { getFeaturedServices, type Service } from "@/lib/API/service";
 import FeaturedServiceCard from "./FeaturedServiceCard";
@@ -40,14 +41,19 @@ async function ServicesGrid() {
 // Grey boxes shown while the services are loading.
 function GridPlaceholder() {
   return (
-    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.2 }}
+      className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
+    >
       {[1, 2, 3].map((item) => (
         <div
           key={item}
           className="h-80 animate-pulse rounded-xl border border-border bg-muted"
         />
       ))}
-    </div>
+    </motion.div>
   );
 }
 
@@ -55,7 +61,12 @@ export default function FeaturedServices() {
   return (
     <section className="mx-auto w-full max-w-6xl px-6 py-16 sm:py-20">
       {/* Section title on the left, "See all services" link on the right */}
-      <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
+        className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"
+      >
         <div>
           <p className="text-sm font-medium uppercase tracking-[0.2em] text-muted-foreground">
             Good work, close by
@@ -75,7 +86,7 @@ export default function FeaturedServices() {
           See all services
           <ArrowRight className="size-4" />
         </Link>
-      </div>
+      </motion.div>
 
       {/* The cards (a placeholder is shown until the data arrives) */}
       <Suspense fallback={<GridPlaceholder />}>

@@ -1,10 +1,23 @@
 import Link from "next/link";
+import * as motion from "framer-motion/client";
+import type { Variants } from "framer-motion";
 import type { Service } from "@/lib/API/service";
 import { Button } from "@/components/ui/button";
 
 // Shows a small summary of the services the technician added.
 type ServicesSummaryProps = {
   services: Service[];
+};
+
+// The four summary cards follow the page reveal with their own stagger.
+const list: Variants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.05, delayChildren: 0.05 } },
+};
+
+const cardVariants: Variants = {
+  hidden: { opacity: 0, y: 8 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.25, ease: "easeOut" } },
 };
 
 export default function ServicesSummary({ services }: ServicesSummaryProps) {
@@ -47,14 +60,21 @@ export default function ServicesSummary({ services }: ServicesSummaryProps) {
         </Button>
       </div>
 
-      <div className="grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-4">
+      <motion.div
+        variants={list}
+        className="grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-4"
+      >
         {summaryCards.map((card) => (
-          <div key={card.label} className="rounded-lg border border-border p-3">
+          <motion.div
+            key={card.label}
+            variants={cardVariants}
+            className="rounded-lg border border-border p-3"
+          >
             <p className="text-sm text-muted-foreground">{card.label}</p>
             <p className="mt-1 text-2xl font-bold">{card.value}</p>
-          </div>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
     </div>
   );
 }

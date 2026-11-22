@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useState } from "react"
+import { AnimatePresence, motion } from "framer-motion"
 import { ArrowUpRight, Menu, Wrench, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { buttonVariants } from "@/components/Navbar/button"
@@ -57,7 +58,12 @@ export function Navbar() {
   const close = () => setOpen(false)
 
   return (
-    <header className="sticky top-0 z-20 border-b border-foreground/10 bg-background/90 backdrop-blur-xl">
+    <motion.header
+      initial={{ opacity: 0, y: -8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
+      className="sticky top-0 z-20 border-b border-foreground/10 bg-background/90 backdrop-blur-xl"
+    >
       <div className="mx-auto flex h-[66px] w-full max-w-7xl items-center justify-between px-5 md:h-[78px] md:px-8 lg:px-12">
         <Link
           href="/"
@@ -114,11 +120,17 @@ export function Navbar() {
         </div>
       </div>
 
-      {open && (
-        <nav
-          aria-label="Mobile"
-          className="absolute inset-x-0 top-full flex flex-col gap-4 border-b border-border bg-background px-6 pb-5 pt-4 md:hidden"
-        >
+      <AnimatePresence>
+        {open && (
+          <motion.nav
+            key="mobile-nav"
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.18, ease: "easeOut" }}
+            aria-label="Mobile"
+            className="absolute inset-x-0 top-full flex flex-col gap-4 border-b border-border bg-background px-6 pb-5 pt-4 md:hidden"
+          >
           {NAV_LINKS.map((link) => (
             <NavLink key={link.href} {...link} pathname={pathname} onClick={close} />
           ))}
@@ -137,8 +149,9 @@ export function Navbar() {
             Get started
             <ArrowUpRight className="size-[15px]" />
           </Link>
-        </nav>
-      )}
-    </header>
+          </motion.nav>
+        )}
+      </AnimatePresence>
+    </motion.header>
   )
 }

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { motion, type Variants } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import {
   getCustomerBookings,
@@ -25,6 +26,17 @@ const getGreeting = () => {
   if (hour < 12) return "Good morning";
   if (hour < 18) return "Good afternoon";
   return "Good evening";
+};
+
+// The page and the stat cards share one staggered reveal.
+const container: Variants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.07, delayChildren: 0.05 } },
+};
+
+const item: Variants = {
+  hidden: { opacity: 0, y: 12 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.3, ease: "easeOut" } },
 };
 
 export default function CustomerOverviewPage() {
@@ -122,9 +134,14 @@ export default function CustomerOverviewPage() {
     !showLoading && !showSignIn && !showError && bookings.length > 0;
 
   return (
-    <div className="mx-auto w-full max-w-6xl">
+    <motion.div
+      variants={container}
+      initial="hidden"
+      animate="show"
+      className="mx-auto w-full max-w-6xl"
+    >
       {/* Greeting with the real name of the signed in customer */}
-      <div className="mb-6">
+      <motion.div variants={item} className="mb-6">
         <h1 className="text-2xl font-bold tracking-tight">
           {greeting && session?.user?.name
             ? `${greeting}, ${session.user.name}`
@@ -133,7 +150,7 @@ export default function CustomerOverviewPage() {
         <p className="text-sm text-muted-foreground">
           Here is what is happening with your repairs.
         </p>
-      </div>
+      </motion.div>
 
       {showLoading && (
         <p className="py-10 text-center text-sm text-muted-foreground">
@@ -168,7 +185,10 @@ export default function CustomerOverviewPage() {
           <PaymentBanner count={unpaidCompleted} />
 
           {/* The 5 cards are counted from the real bookings and payments */}
-          <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          <motion.div
+            variants={container}
+            className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5"
+          >
             <StatCard
               label="Total bookings"
               value={totalBookings}
@@ -194,7 +214,7 @@ export default function CustomerOverviewPage() {
               value={`৳${totalPaid.toLocaleString("en-US")}`}
               hint="All your payments"
             />
-          </div>
+          </motion.div>
 
           {/* Count of each of the 5 statuses */}
           <div className="mb-6">
@@ -208,6 +228,6 @@ export default function CustomerOverviewPage() {
           </div>
         </>
       )}
-    </div>
+    </motion.div>
   );
 }

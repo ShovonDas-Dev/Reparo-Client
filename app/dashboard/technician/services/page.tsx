@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { motion, type Variants } from "framer-motion";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -32,6 +33,17 @@ const filterOptions = [
     label: info.label,
   })),
 ];
+
+// One staggered reveal for the page, its cards and its table rows.
+const container: Variants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.06, delayChildren: 0.05 } },
+};
+
+const item: Variants = {
+  hidden: { opacity: 0, y: 10 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.28, ease: "easeOut" } },
+};
 
 export default function TechnicianServicesPage() {
   const { data: session, isPending } = useSession();
@@ -171,9 +183,17 @@ export default function TechnicianServicesPage() {
     !showLoading && !showSignIn && !showError && visibleServices.length > 0;
 
   return (
-    <div className="mx-auto w-full max-w-6xl">
+    <motion.div
+      variants={container}
+      initial="hidden"
+      animate="show"
+      className="mx-auto w-full max-w-6xl"
+    >
       {/* Page title and the Add a service button */}
-      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <motion.div
+        variants={item}
+        className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+      >
         <div>
           <h1 className="text-2xl font-bold tracking-tight">My Services</h1>
           <p className="text-sm text-muted-foreground">
@@ -184,21 +204,25 @@ export default function TechnicianServicesPage() {
         <Button render={<Link href="/dashboard/technician/add-service" />}>
           Add a service
         </Button>
-      </div>
+      </motion.div>
 
       {/* The 3 cards are counted from the list */}
-      <div className="mb-6 grid gap-4 sm:grid-cols-3">
+      <motion.div variants={container} className="mb-6 grid gap-4 sm:grid-cols-3">
         {statCards.map((card) => (
-          <div key={card.label} className="rounded-xl border border-border p-4">
+          <motion.div
+            key={card.label}
+            variants={item}
+            className="rounded-xl border border-border p-4"
+          >
             <p className="text-sm text-muted-foreground">{card.label}</p>
             <p className="mt-1 text-3xl font-bold">{card.value}</p>
             <p className="text-xs text-muted-foreground">{card.hint}</p>
-          </div>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
 
       {/* Services panel */}
-      <div className="rounded-xl border border-border">
+      <motion.div variants={item} className="rounded-xl border border-border">
         {/* Panel header with the approval filter */}
         <div className="flex flex-col gap-3 border-b border-border p-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -274,9 +298,13 @@ export default function TechnicianServicesPage() {
                   <th className="px-4 py-3 font-medium">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border">
+              <motion.tbody variants={container} className="divide-y divide-border">
                 {visibleServices.map((service) => (
-                  <tr key={service._id} className="hover:bg-muted/40">
+                  <motion.tr
+                    key={service._id}
+                    variants={item}
+                    className="hover:bg-muted/40"
+                  >
                     {/* Service image, title and the service mode below */}
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
@@ -351,13 +379,13 @@ export default function TechnicianServicesPage() {
                         Delete
                       </Button>
                     </td>
-                  </tr>
+                  </motion.tr>
                 ))}
-              </tbody>
+              </motion.tbody>
             </table>
           </div>
         )}
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

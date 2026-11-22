@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useState, type ChangeEvent } from "react";
+import { motion, type Variants } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { User } from "@/lib/API/service";
@@ -11,6 +12,17 @@ import UserDetailsDialog from "./UserDetailsDialog";
 
 // How many users are shown on one page.
 const USERS_PER_PAGE = 10;
+
+// Rows follow the page reveal with their own stagger.
+const list: Variants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.04, delayChildren: 0.05 } },
+};
+
+const row: Variants = {
+  hidden: { opacity: 0, y: 8 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.25, ease: "easeOut" } },
+};
 
 // Turn "2026-11-20T..." into "20 Nov 2026".
 const formatDate = (value?: string) => {
@@ -148,9 +160,13 @@ export default function UsersTable({ users }: UsersTableProps) {
                 <th className="px-4 py-3 font-medium">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border">
+            <motion.tbody variants={list} className="divide-y divide-border">
               {visibleUsers.map((user) => (
-                <tr key={user._id} className="hover:bg-muted/40">
+                <motion.tr
+                  key={user._id}
+                  variants={row}
+                  className="hover:bg-muted/40"
+                >
                   {/* Avatar or initials and the user name */}
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
@@ -206,9 +222,9 @@ export default function UsersTable({ users }: UsersTableProps) {
                       View details
                     </Button>
                   </td>
-                </tr>
+                </motion.tr>
               ))}
-            </tbody>
+            </motion.tbody>
           </table>
         </div>
       )}

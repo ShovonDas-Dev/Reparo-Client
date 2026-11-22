@@ -1,4 +1,6 @@
 import Link from "next/link";
+import * as motion from "framer-motion/client";
+import type { Variants } from "framer-motion";
 import type { Booking, Service } from "@/lib/API/service";
 import { Button } from "@/components/ui/button";
 
@@ -6,6 +8,17 @@ import { Button } from "@/components/ui/button";
 type PendingActionsProps = {
   bookings: Booking[];
   services: Service[];
+};
+
+// The two action rows follow the page reveal with their own stagger.
+const list: Variants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.06, delayChildren: 0.05 } },
+};
+
+const row: Variants = {
+  hidden: { opacity: 0, y: 8 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.25, ease: "easeOut" } },
 };
 
 export default function PendingActions({
@@ -23,7 +36,7 @@ export default function PendingActions({
   ).length;
 
   return (
-    <div className="rounded-xl border border-border">
+    <motion.div variants={list} className="rounded-xl border border-border">
       {/* Panel header */}
       <div className="border-b border-border p-4">
         <h2 className="text-lg font-semibold">Needs attention</h2>
@@ -33,7 +46,10 @@ export default function PendingActions({
       </div>
 
       {/* Service approvals: count and a link to the services page */}
-      <div className="flex items-center justify-between gap-3 border-b border-border p-4">
+      <motion.div
+        variants={row}
+        className="flex items-center justify-between gap-3 border-b border-border p-4"
+      >
         <div className="min-w-0">
           <p className="font-medium">Technician service approvals</p>
           <p className="text-xs text-muted-foreground">
@@ -51,10 +67,13 @@ export default function PendingActions({
             Review
           </Button>
         </div>
-      </div>
+      </motion.div>
 
       {/* Pending bookings: count and a link to the bookings page */}
-      <div className="flex items-center justify-between gap-3 p-4">
+      <motion.div
+        variants={row}
+        className="flex items-center justify-between gap-3 p-4"
+      >
         <div className="min-w-0">
           <p className="font-medium">Pending bookings</p>
           <p className="text-xs text-muted-foreground">
@@ -72,7 +91,7 @@ export default function PendingActions({
             View
           </Button>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

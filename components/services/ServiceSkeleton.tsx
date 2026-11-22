@@ -1,3 +1,4 @@
+import * as motion from "framer-motion/client";
 import { Skeleton } from "@/components/ui/skeleton";
 
 // One placeholder card — same size as a real ServiceCard so the layout
@@ -23,18 +24,28 @@ export function ServiceCardSkeleton() {
 // Grid of placeholder cards shown while services are loading.
 export function ServiceGridSkeleton({ count = 6 }: { count?: number }) {
   return (
-    <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.2 }}
+      className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3"
+    >
       {Array.from({ length: count }).map((_, index) => (
         <ServiceCardSkeleton key={index} />
       ))}
-    </div>
+    </motion.div>
   );
 }
 
 // Whole-page placeholder used as the Suspense fallback on first load.
 export function ServicesPageSkeleton() {
   return (
-    <div className="mx-auto w-full max-w-7xl px-5 py-12 md:px-8 lg:px-12">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.2 }}
+      className="mx-auto w-full max-w-7xl px-5 py-12 md:px-8 lg:px-12"
+    >
       <Skeleton className="h-3 w-44" />
       <Skeleton className="mt-4 h-11 w-72" />
       <Skeleton className="mt-4 h-4 w-full max-w-xl" />
@@ -68,6 +79,6 @@ export function ServicesPageSkeleton() {
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

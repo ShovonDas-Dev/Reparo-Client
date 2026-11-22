@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
+import { motion, type Variants } from "framer-motion"
 import { ChevronDown, Loader2 } from "lucide-react"
 import { buttonVariants } from "@/components/Navbar/button"
 import { cn } from "@/lib/utils"
@@ -23,6 +24,17 @@ const ROLE_OPTIONS = [
   { value: "technician", label: "Technician" },
   { value: "admin", label: "Admin" },
 ]
+
+// The form content appears as one short staggered sequence.
+const container: Variants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.07, delayChildren: 0.05 } },
+}
+
+const item: Variants = {
+  hidden: { opacity: 0, y: 10 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.3, ease: "easeOut" } },
+}
 
 export default function SignUpPage() {
   const router = useRouter()
@@ -107,13 +119,13 @@ export default function SignUpPage() {
   }
 
   return (
-    <div>
-      <h1 className="text-2xl font-semibold tracking-tight">Create your account</h1>
-      <p className="mt-1.5 text-sm text-muted-foreground">
+    <motion.div variants={container} initial="hidden" animate="show">
+      <motion.h1 variants={item} className="text-2xl font-semibold tracking-tight">Create your account</motion.h1>
+      <motion.p variants={item} className="mt-1.5 text-sm text-muted-foreground">
         Join Reparo to book repairs or offer your services.
-      </p>
+      </motion.p>
 
-      <form onSubmit={handleSubmit} noValidate className="mt-8 space-y-4">
+      <motion.form variants={item} onSubmit={handleSubmit} noValidate className="mt-8 space-y-4">
         {serverError && <FormMessage type="error">{serverError}</FormMessage>}
         {success && <FormMessage type="success">{success}</FormMessage>}
 
@@ -253,9 +265,9 @@ export default function SignUpPage() {
           By creating an account, you agree to Reparo&apos;s Terms of Service and
           Privacy Policy.
         </p>
-      </form>
+      </motion.form>
 
-      <p className="mt-6 text-center text-sm text-muted-foreground">
+      <motion.p variants={item} className="mt-6 text-center text-sm text-muted-foreground">
         Already have an account?{" "}
         <Link
           href="/sign-in"
@@ -263,7 +275,7 @@ export default function SignUpPage() {
         >
           Sign in
         </Link>
-      </p>
-    </div>
+      </motion.p>
+    </motion.div>
   )
 }

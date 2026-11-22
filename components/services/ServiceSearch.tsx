@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { LoaderCircle, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -41,7 +42,12 @@ export function ServiceSearch({ value, isLoading, onSearch }: ServiceSearchProps
   }
 
   return (
-    <div className="relative mt-8">
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
+      className="relative mt-8"
+    >
       <Search
         aria-hidden
         className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-muted-foreground"
@@ -76,6 +82,6 @@ export function ServiceSearch({ value, isLoading, onSearch }: ServiceSearchProps
           </Button>
         ) : null}
       </div>
-    </div>
+    </motion.div>
   );
 }

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { motion, type Variants } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import {
   getTechnicianBookings,
@@ -27,6 +28,17 @@ const getGreeting = () => {
   if (hour < 12) return "Good morning";
   if (hour < 18) return "Good afternoon";
   return "Good evening";
+};
+
+// The page and the stat cards share one staggered reveal.
+const container: Variants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.07, delayChildren: 0.05 } },
+};
+
+const item: Variants = {
+  hidden: { opacity: 0, y: 12 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.3, ease: "easeOut" } },
 };
 
 export default function TechnicianOverviewPage() {
@@ -130,9 +142,14 @@ export default function TechnicianOverviewPage() {
   const showContent = !showLoading && !showSignIn && !showError;
 
   return (
-    <div className="mx-auto w-full max-w-6xl">
+    <motion.div
+      variants={container}
+      initial="hidden"
+      animate="show"
+      className="mx-auto w-full max-w-6xl"
+    >
       {/* Greeting with the real name of the signed in technician */}
-      <div className="mb-6">
+      <motion.div variants={item} className="mb-6">
         <h1 className="text-2xl font-bold tracking-tight">
           {greeting && session?.user?.name
             ? `${greeting}, ${session.user.name}`
@@ -141,7 +158,7 @@ export default function TechnicianOverviewPage() {
         <p className="text-sm text-muted-foreground">
           Here is what is happening with your work.
         </p>
-      </div>
+      </motion.div>
 
       {showLoading && (
         <p className="py-10 text-center text-sm text-muted-foreground">
@@ -165,7 +182,10 @@ export default function TechnicianOverviewPage() {
           <NewRequestsBanner count={newRequests} />
 
           {/* The 6 cards are counted from the real data */}
-          <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <motion.div
+            variants={container}
+            className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+          >
             <StatCard
               label="Total jobs"
               value={totalJobs}
@@ -196,7 +216,7 @@ export default function TechnicianOverviewPage() {
               value={`৳${totalEarnings.toLocaleString("en-US")}`}
               hint="All payments received"
             />
-          </div>
+          </motion.div>
 
           {/* Counts for the technician services */}
           <div className="mb-6">
@@ -228,6 +248,6 @@ export default function TechnicianOverviewPage() {
           )}
         </>
       )}
-    </div>
+    </motion.div>
   );
 }

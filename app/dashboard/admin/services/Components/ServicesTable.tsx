@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useState, type ChangeEvent } from "react";
+import { motion, type Variants } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { Service } from "@/lib/API/service";
@@ -11,6 +12,17 @@ import ServiceDetailsDialog from "./ServiceDetailsDialog";
 
 // How many services are shown on one page.
 const SERVICES_PER_PAGE = 10;
+
+// Rows follow the page reveal with their own stagger.
+const list: Variants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.04, delayChildren: 0.05 } },
+};
+
+const row: Variants = {
+  hidden: { opacity: 0, y: 8 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.25, ease: "easeOut" } },
+};
 
 // The client part of the page: banner, search, filters, table and pagination.
 type ServicesTableProps = {
@@ -182,9 +194,13 @@ export default function ServicesTable({ services }: ServicesTableProps) {
                 <th className="px-4 py-3 font-medium">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border">
+            <motion.tbody variants={list} className="divide-y divide-border">
               {visibleServices.map((service) => (
-                <tr key={service._id} className="hover:bg-muted/40">
+                <motion.tr
+                  key={service._id}
+                  variants={row}
+                  className="hover:bg-muted/40"
+                >
                   {/* Small image, title and category */}
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
@@ -256,9 +272,9 @@ export default function ServicesTable({ services }: ServicesTableProps) {
                       View details
                     </Button>
                   </td>
-                </tr>
+                </motion.tr>
               ))}
-            </tbody>
+            </motion.tbody>
           </table>
         </div>
       )}
