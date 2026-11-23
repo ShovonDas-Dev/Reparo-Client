@@ -234,7 +234,7 @@ No license has been specified for this project yet. Please contact the repositor
 
 **Making Repair Services Easier, One Step at a Time.**
 
-Made with ❤️ by the Reparo Development Team
+Made with ❤️ by Shovon Das
 
 [Live Website](https://reparo-client.vercel.app/) · [GitHub Repository](https://github.com/ShovonDas-Dev/Reparo-Client)
 
