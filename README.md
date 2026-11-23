@@ -26,13 +26,6 @@ Reparo comes with three dedicated dashboards:
 
 Our goal is to make repair services easier, faster, and more convenient.
 
-## 🖥️ Project Preview
-
-<div align="center">
-
-<img src="public/reparo-cover.png" alt="Reparo Project Preview" width="100%" />
-
-</div>
 
 ## ✨ Key Features
 
