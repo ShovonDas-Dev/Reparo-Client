@@ -9,15 +9,11 @@ import { ArrowUpRight, Menu, Wrench, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { buttonVariants } from "@/components/Navbar/button"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
-import { useSession } from "@/lib/auth-client"
+
 import { UserMenu } from "./user-menu"
 import Spinner from "../MyUI/Loading/Spinner" 
+import { useSession } from "@/lib/auth-client"
 
-const NAV_LINKS = [
-  { href: "/", label: "Home" },
-  { href: "/services", label: "Services" },
-  { href: "/about", label: "How it works" },
-]
 
 const CTA_CLASSES =
   "h-10 rounded-md px-4 text-xs font-semibold hover:-translate-y-0.5 hover:bg-primary/85"
@@ -59,6 +55,18 @@ export function Navbar() {
 
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
+
+  const NAV_LINKS = [
+    { href: "/", label: "Home" },
+    { href: "/services", label: "Services" },
+    { href: "/about", label: "How it works" },
+    ...(user
+      ? [
+          { href: "/profile", label: "Profile" },
+          { href: `/dashboard/${user.role ?? ""}`, label: "Dashboard" },
+        ]
+      : []),
+  ]
 
   const close = () => setOpen(false)
 
@@ -184,7 +192,7 @@ export function Navbar() {
 
             {/* Mobile Authentication Actions */}
             <div className="flex items-center gap-5 border-t border-border pt-4">
-              <AuthActions />
+              
             </div>
           </motion.nav>
         )}
